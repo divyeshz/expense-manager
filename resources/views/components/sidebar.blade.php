@@ -2,25 +2,25 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
         <div class="sidebar-brand-icon rotate-n-15">
             <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+        <div class="sidebar-brand-text mx-1">{{  str_replace('_',' ',env('APP_NAME')) }}</div>
     </a>
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
-    <li class="nav-item active">
-        <a class="nav-link" href="">
+    <li class="nav-item @if(Request::path() == 'dashboard') active @endif">
+        <a class="nav-link" href="{{ route('dashboard') }}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
     </li>
 
-    <li class="nav-item">
-        <a class="nav-link" href="">
+    <li class="nav-item @if(Request::path() == 'accounts' || Request::path() == 'accountsAdd') active @endif">
+        <a class="nav-link" href="{{ route('accounts.list') }}">
             <i class="fas fa-fw fa-solid fa-users"></i>
             <span>Accounts</span></a>
     </li>

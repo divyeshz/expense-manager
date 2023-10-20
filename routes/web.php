@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -15,10 +16,15 @@ use App\Http\Controllers\UserController;
 */
 
 
-Route::get('/index', function () {
-    return view('pages.index');
-});
+Route::get('/dashboard', function () {
+    return view('pages.dashboard');
+})->name('dashboard');
 
+// Account Module Routes Group
+Route::controller(AccountController::class)->group(function(){
+    Route::get('/accounts', 'accountsList')->name('accounts.list');
+    Route::get('/accountsAdd', 'accountsAdd')->name('accounts.add');
+});
 
 // User Module Routes Group
 Route::controller(UserController::class)->group(function(){

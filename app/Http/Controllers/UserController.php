@@ -74,7 +74,7 @@ class UserController extends Controller
         //     'password' => Hash::make($request->password),
         // ]);
 
-        return redirect('/index')->with('success', 'Register SuccessFully!!!  Now Login.');
+        return redirect('/dashboard')->with('success', 'Register SuccessFully!!!  Now Login.');
     }
 
     // User Login
@@ -95,7 +95,7 @@ class UserController extends Controller
         // Attempt for Login With User Credentials
         $credential = $request->only('email', 'password');
         if (Auth::attempt($credential)) {
-            return redirect('index')->withErrors($validate);
+            return redirect('dashboard')->withErrors($validate);
         }
 
         return redirect('/')->with('error', 'Invaild Credential!!!');
