@@ -1,7 +1,10 @@
+{{-- Extends MainLayout --}}
 @extends('layouts.authLayout')
 
-@section('title', 'Expense Manager | Login')
+{{-- Change Title --}}
+@section('title', 'Exp. Mgr. | Login')
 
+{{-- Content Start --}}
 @section('content')
 
     <!-- Outer Row -->
@@ -19,26 +22,37 @@
                                 <div class="text-center">
                                     <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
                                 </div>
+
+                                {{-- Login Form --}}
                                 <form id="loginForm" class="user" action="{{ route('login') }}" method="POST">
+                                    {{-- Csrf --}}
                                     @csrf
 
+                                    {{-- Email --}}
                                     <div class="form-group">
-                                        <input type="email" class="form-control form-control-user" name="email" id="email" placeholder="Email Address">
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password">
+                                        <input type="email" class="form-control form-control-user" name="email"
+                                            id="email" placeholder="Email Address">
                                     </div>
 
+                                    {{-- Password --}}
+                                    <div class="form-group">
+                                        <input type="password" class="form-control form-control-user" id="password"
+                                            name="password" placeholder="Password">
+                                    </div>
 
+                                    {{-- Login Button --}}
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
                                         Login
                                     </button>
 
                                 </form>
                                 <hr>
+                                {{-- Forgot Password Link --}}
                                 <div class="text-center">
                                     <a class="small" href="{{ route('forgotPasswordForm') }}">Forgot Password?</a>
                                 </div>
+
+                                {{-- Create an Account Link --}}
                                 <div class="text-center">
                                     <a class="small" href="{{ route('registrationForm') }}">Create an Account!</a>
                                 </div>
@@ -57,40 +71,40 @@
 
 @section('jsContent')
 
-<script>
-    $("#alert-box").delay(3000).fadeOut();
+    <script>
 
-    $(document).ready(function() {
+        $(document).ready(function() {
 
-        $.validator.addMethod("endsWithCom", function(value, element) {
-            return value.endsWith(".com");
-        }, "Please enter a valid email address ending with .com.");
+            $.validator.addMethod("endsWithCom", function(value, element) {
+                return value.endsWith(".com");
+            }, "Please enter a valid email address ending with .com.");
 
-        $("#loginForm").validate({
-            rules: {
-                email: {
-                    required: true,
-                    email: true,
-                    endsWithCom: true
+            // Validate Login Form
+            $("#loginForm").validate({
+                rules: {
+                    email: {
+                        required: true,
+                        email: true,
+                        endsWithCom: true
+                    },
+                    password: {
+                        required: true,
+                        minlength: 6
+                    }
                 },
-                password: {
-                    required: true,
-                    minlength: 5
+                messages: {
+                    email: {
+                        required: "We need your email address to contact you",
+                        email: "Your email address must be in the format of name@domain.com",
+                        endsWithCom: "Please enter a valid email address ending with .com."
+                    },
+                    password: {
+                        required: "Please provide a password",
+                        minlength: "Your password must be at least 6 characters long"
+                    }
                 }
-            },
-            messages: {
-                email: {
-                    required: "We need your email address to contact you",
-                    email: "Your email address must be in the format of name@domain.com",
-                    endsWithCom: "Please enter a valid email address ending with .com."
-                },
-                password: {
-                    required: "Please provide a password",
-                    minlength: "Your password must be at least 5 characters long"
-                }
-            }
+            });
         });
-    });
-</script>
+    </script>
 
 @endsection

@@ -19,10 +19,18 @@
             <span>Dashboard</span></a>
     </li>
 
-    <li class="nav-item @if(Request::path() == 'accounts' || Request::path() == 'accountsAdd') active @endif">
-        <a class="nav-link" href="{{ route('accounts.list') }}">
+    {{-- Account Tab --}}
+    <li class="nav-item @if(Request::path() == 'account') active @endif">
+        <a class="nav-link" href="{{ route('account') }}">
             <i class="fas fa-fw fa-solid fa-users"></i>
-            <span>Accounts</span></a>
+            <span>Account</span></a>
+    </li>
+
+    {{-- Category Tab --}}
+    <li class="nav-item @if(Request::path() == 'category') active @endif">
+        <a class="nav-link" href="{{ route('category') }}">
+            <i class="fas fa-vector-square"></i>
+            <span>Category</span></a>
     </li>
 
     <!-- Divider -->

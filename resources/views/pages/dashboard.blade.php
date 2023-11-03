@@ -1,7 +1,10 @@
+{{-- Extends MainLayout --}}
 @extends('layouts.mainLayout')
 
-@section('title','Expense Manager | Dashboard')
+{{-- Change Title --}}
+@section('title','Exp. Mgr. | Dashboard')
 
+{{-- Content Start --}}
 @section('content')
 
 <!-- Begin Page Content -->

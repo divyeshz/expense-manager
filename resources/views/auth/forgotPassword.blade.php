@@ -1,7 +1,10 @@
+{{-- Extends MainLayout --}}
 @extends('layouts.authLayout')
 
-@section('title', 'Expense Manager | Forgot Password')
+{{-- Change Title --}}
+@section('title', 'Exp. Mgr. | Forgot Password')
 
+{{-- Content Start --}}
 @section('content')
 
     <!-- Outer Row -->
@@ -22,13 +25,19 @@
                                         and we'll send you a link to reset your password!</p>
                                 </div>
 
+                                {{-- Forgot Password Form --}}
                                 <form class="user" id="forgotPasswordForm" action="{{ route('forgotPassword') }}"
                                     method="post">
+                                    {{-- Csrf --}}
                                     @csrf
+
+                                    {{-- Email --}}
                                     <div class="form-group">
                                         <input name="email" id="email" type="email"
                                             class="form-control form-control-user" placeholder="Enter Email Address...">
                                     </div>
+
+                                    {{-- Reset Password Button --}}
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
                                         Reset Password
                                     </button>
@@ -36,9 +45,12 @@
 
                                 <hr>
 
+                                {{-- Create an Account Button --}}
                                 <div class="text-center">
                                     <a class="small" href="{{ route('registrationForm') }}">Create an Account!</a>
                                 </div>
+
+                                {{-- Already have an account Button --}}
                                 <div class="text-center">
                                     <a class="small" href="{{ route('loginForm') }}">Already have an account? Login!</a>
                                 </div>
@@ -57,14 +69,13 @@
 @section('jsContent')
 
     <script>
-        $("#alert-box").delay(3000).fadeOut();
-
         $(document).ready(function() {
 
             $.validator.addMethod("endsWithCom", function(value, element) {
                 return value.endsWith(".com");
             }, "Please enter a valid email address ending with .com.");
 
+            // Validate Forgot Password Form
             $("#forgotPasswordForm").validate({
                 rules: {
                     email: {
