@@ -25,7 +25,7 @@ class UserController extends Controller
     public function loginForm()
     {
         if (Auth::check()) {
-            return redirect('dashboard');
+            return redirect()->route('dashboard');
         }
         return view('auth.login');
     }
@@ -34,7 +34,7 @@ class UserController extends Controller
     public function registrationForm()
     {
         if (Auth::check()) {
-            return redirect('dashboard');
+            return redirect()->route('dashboard');
         }
         return view('auth.register');
     }
@@ -43,7 +43,7 @@ class UserController extends Controller
     public function forgotPasswordForm()
     {
         if (Auth::check()) {
-            return redirect('index');
+            return redirect()->route('dashboard');
         }
         return view('auth.forgotPassword');
     }
@@ -78,9 +78,6 @@ class UserController extends Controller
     // Show Change Password Form
     public function changePasswordForm()
     {
-        // if (Auth::check()) {
-        //     return redirect('index');
-        // }
         return view('auth.changePassword');
     }
 
@@ -190,6 +187,6 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-        return redirect('/');
+        return redirect()->route('loginForm');
     }
 }

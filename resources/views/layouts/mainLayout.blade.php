@@ -48,7 +48,9 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
+        @auth
         @includeIf('components.sidebar')
+        @endauth
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -56,7 +58,9 @@
             <!-- Main Content -->
             <div id="content">
 
+                @auth
                 @includeIf('components.header')
+                @endauth
 
                 @yield('content')
 
@@ -65,7 +69,10 @@
             @includeIF('components.authModal')
             @includeIF('components.accountModal')
             @includeIf('components.categoryModal')
+
+            @auth
             @includeIf('components.footer')
+            @endauth
 
         </div>
         <!-- End of Content Wrapper -->

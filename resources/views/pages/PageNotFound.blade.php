@@ -1,26 +1,65 @@
-{{-- Extends MainLayout --}}
-@extends('layouts.mainLayout')
+<!DOCTYPE html>
+<html lang="en">
 
-{{-- Change Title --}}
-@section('title','Exp. Mgr. | 404')
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Exp. Mgr. | 404'</title>
+    <style>
+        * {
+            transition: all 0.6s;
+        }
 
-{{-- Content Start --}}
-@section('content')
+        html {
+            height: 100%;
+        }
 
-<!-- Begin Page Content -->
-<div class="container-fluid">
+        body {
+            font-family: 'Lato', sans-serif;
+            color: #888;
+            margin: 0;
+        }
 
-    <!-- 404 Error Text -->
-    <div class="text-center">
-        <div class="error mx-auto" data-text="404">404</div>
-        <p class="lead text-gray-800 mb-5">Page Not Found</p>
-        <p class="text-gray-500 mb-0">It looks like you found a glitch in the matrix...</p>
-        <a href="{{ route('dashboard') }}">&larr; Back to Dashboard</a>
+        #main {
+            display: table;
+            width: 100%;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .fof {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .fof h1 {
+            font-size: 50px;
+            display: inline-block;
+            padding-right: 12px;
+            animation: type .5s alternate infinite;
+        }
+
+        @keyframes type {
+            from {
+                box-shadow: inset -3px 0px 0px #888;
+            }
+
+            to {
+                box-shadow: inset -3px 0px 0px transparent;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="main">
+        <div class="fof">
+            <h1>Error 404</h1>
+        </div>
     </div>
 
-    <!-- Content Row -->
+</body>
 
-</div>
-<!-- /.container-fluid -->
-
-@endsection
+</html>
