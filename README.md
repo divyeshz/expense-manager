@@ -117,6 +117,27 @@ MAIL_FROM_NAME=Expense Manager
 - Transaction history with income, expenses, and transfers.
 - Category management for transactions.
 
+## Screenshots
+
+![login](https://github.com/divyeshz/expense-manager/assets/146099072/5b100231-ea67-437f-8469-e96e0e9a843a)
+![register](https://github.com/divyeshz/expense-manager/assets/146099072/61663858-e8d4-4f09-a43e-27316f54881a)
+![User Profile](https://github.com/divyeshz/expense-manager/assets/146099072/ffee5400-4532-4383-b13c-6e86c2fa5701)
+![Dashboard](https://github.com/divyeshz/expense-manager/assets/146099072/d17f78d1-de38-4a95-8ed1-bb9dcacaefc1)
+![Account List](https://github.com/divyeshz/expense-manager/assets/146099072/556e59c9-64d6-4678-bb14-fd734e4e3b33)
+![Add Account](https://github.com/divyeshz/expense-manager/assets/146099072/1030ecc0-944d-44e3-95d6-a067870c5cb2)
+![Edit Account](https://github.com/divyeshz/expense-manager/assets/146099072/84747532-d0b5-4cce-a0a8-61e4098c210e)
+![Account Delete](https://github.com/divyeshz/expense-manager/assets/146099072/26ce5711-4454-4321-920c-2c488f7686d4)
+![Add Balance](https://github.com/divyeshz/expense-manager/assets/146099072/9dae3f48-d371-4ffb-be6b-1f7324a26cc2)
+![Category List](https://github.com/divyeshz/expense-manager/assets/146099072/8d595eea-0940-4e68-abe2-5690cf3282af)
+![Add Category](https://github.com/divyeshz/expense-manager/assets/146099072/c94e82df-5fd6-4e72-aadd-b5aff360fdd0)
+![Edit Category](https://github.com/divyeshz/expense-manager/assets/146099072/a69a0ff4-b264-4716-9084-87bb3a2a1830)
+![Transaction List](https://github.com/divyeshz/expense-manager/assets/146099072/196abfaa-60e7-4a0e-b422-b4e47eb7fe33)
+![Add Transaction](https://github.com/divyeshz/expense-manager/assets/146099072/d3b53efc-405e-46ca-b989-50475494f160)
+![Edit Transaction](https://github.com/divyeshz/expense-manager/assets/146099072/e4c6f6d4-bf3b-4ee1-9055-35f8413176ad)
+![Change Password](https://github.com/divyeshz/expense-manager/assets/146099072/868d1d1f-c368-4c6c-893b-eb24a7da651a)
+![forgot password](https://github.com/divyeshz/expense-manager/assets/146099072/fe0f019b-f5fa-4ef8-880c-71b09207218c)
+![Logout](https://github.com/divyeshz/expense-manager/assets/146099072/cdc0e8d3-3c79-4f96-85c7-231cbbbb069e)
+
 ## Contributing
 
 - Pull requests are welcome.
