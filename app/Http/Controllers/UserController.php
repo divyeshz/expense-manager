@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\WelcomeMail;
-use App\Mail\ForgotPasswordMail;
-use App\Models\Account;
+use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Account;
+use App\Mail\ForgotPasswordMail;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -62,17 +65,67 @@ class UserController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        dispatch(function() use ($user){
-            Mail::to($user->email)->send(new ForgotPasswordMail());
-        });
-
         if (!$user) {
             return redirect()->route('forgotPasswordForm')->with('error', 'Invaild Credential!!!');
         } else {
+            $token = Str::random(100);
+            DB::table('password_reset_tokens')->insert([
+                'email' => $user->email,
+                'token' => $token,
+                'created_at' => Carbon::now(),
+            ]);
+
+            dispatch(function () use ($user, $token) {
+                Mail::to($user->email)->send(new ForgotPasswordMail($user, $token));
+            });
+
             return redirect("/")->with('success', 'We have sent you a mail');
         }
+    }
 
+    // Show Reset Password Form
+    public function resetPasswordForm($token)
+    {
+        $prt_data = DB::table('password_reset_tokens')->where('token', $token)->first();
 
+        if (!$prt_data || Carbon::now()->subminutes(10) > $prt_data->created_at) {
+            return redirect()->back()->with('error', 'Invalid password reset link or link is expired.');
+        } else {
+            return view('auth.resetpassword', compact('token'));
+        }
+    }
+
+    // Actual Functionality for Reset Password
+    public function resetPassword(Request $request)
+    {
+        $prt_data = DB::table('password_reset_tokens')->where('token', $request->prt_token)->first();
+        $email = $prt_data->email;
+        $user = User::where('email', $email)->first();
+
+        if (!$prt_data || Carbon::now()->subminutes(10) > $prt_data->created_at) {
+            return redirect()->back()->with('error', 'Invalid password reset link or link expired.');
+        } else {
+
+            // Validate Data
+            $validate = Validator::make($request->all(), [
+                'prt_token' => 'required',
+                'password' => 'required|min:6',
+                'confirm_password' => 'required|min:6|same:password',
+            ]);
+
+            // If Validation Fails Than Redirect And Show Validation Error
+            if ($validate->fails()) {
+                return redirect()->back()->withErrors($validate);
+            }
+
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            $prt_data = DB::table('password_reset_tokens')->where('token', $request->prt_token)->delete();
+
+            return redirect()->route('loginForm')->with('success', 'Password Reset successfully!!!');
+        }
     }
 
     // Show Change Password Form
@@ -142,7 +195,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        dispatch(function() use ($user, $data){
+        dispatch(function () use ($user, $data) {
             Mail::to($user->email)->send(new WelcomeMail($data));
         });
 

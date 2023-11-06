@@ -29,12 +29,14 @@ Route::controller(UserController::class)->group(function () {
     Route::post('login', 'login')->name('login');
     Route::get('forgotPassword', 'forgotPasswordForm')->name('forgotPasswordForm');
     Route::post('forgotPassword', 'forgotPassword')->name('forgotPassword');
+    Route::get('resetPassword/{token}', 'resetPasswordForm')->name('resetPasswordForm');
+    Route::post('resetPassword', 'resetPassword')->name('resetPassword');
 
     Route::group(['middleware' => 'auth'], function () {
         Route::get('profile', 'profile')->name('profile')->middleware('auth');
         Route::get('logout', 'logout')->name('logout');
-        Route::post('changePassword', 'changePassword')->name('changePassword');
         Route::get('changePassword', 'changePasswordForm')->name('changePasswordForm');
+        Route::post('changePassword', 'changePassword')->name('changePassword');
     });
 });
 
