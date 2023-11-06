@@ -10,7 +10,8 @@
     <!-- Begin Page Content -->
     <div class="container-fluid">
 
-        <div class="row">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between ">
             <h1 class="h3 mb-4 text-gray-800">User Profile</h1>
         </div>
 
