@@ -134,6 +134,8 @@ MAIL_FROM_NAME=Expense Manager
 ![Transaction List](https://github.com/divyeshz/expense-manager/assets/146099072/196abfaa-60e7-4a0e-b422-b4e47eb7fe33)
 ![Add Transaction](https://github.com/divyeshz/expense-manager/assets/146099072/d3b53efc-405e-46ca-b989-50475494f160)
 ![Edit Transaction](https://github.com/divyeshz/expense-manager/assets/146099072/e4c6f6d4-bf3b-4ee1-9055-35f8413176ad)
+![Another Account](https://github.com/divyeshz/expense-manager/assets/146099072/068d738d-6660-4ea1-8a7c-3da24b4a74ef)
+![Add Another Account](https://github.com/divyeshz/expense-manager/assets/146099072/1b77d6bb-fc73-4a0b-bfee-5fee8de43d58)
 ![Change Password](https://github.com/divyeshz/expense-manager/assets/146099072/868d1d1f-c368-4c6c-893b-eb24a7da651a)
 ![forgot password](https://github.com/divyeshz/expense-manager/assets/146099072/fe0f019b-f5fa-4ef8-880c-71b09207218c)
 ![Logout](https://github.com/divyeshz/expense-manager/assets/146099072/cdc0e8d3-3c79-4f96-85c7-231cbbbb069e)
