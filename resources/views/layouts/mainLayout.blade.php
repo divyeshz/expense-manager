@@ -69,6 +69,7 @@
             @includeIF('components.authModal')
             @includeIF('components.accountModal')
             @includeIf('components.categoryModal')
+            @includeIf('components.anotherAccountModal')
 
             @auth
             @includeIf('components.footer')

@@ -56,8 +56,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('accountEdit', 'accountEdit')->name('account.edit');
         Route::post('accountDelete', 'accountDelete')->name('account.delete');
         Route::post('addBalance', 'addBalance')->name('addBalance');
+
+        // Another Account Routes
+        Route::get('anotherAccount', 'anotherAccount')->name('anotherAccount');
+        Route::get('anotherAccountRequestList', 'anotherAccountRequestList')->name('anotherAccount.requestList');
+        Route::post('findAnotherAccount', 'findAnotherAccount')->name('anotherAccount.find');
+        Route::post('requestAnotherAccount', 'requestAnotherAccount')->name('anotherAccount.request');
+        Route::post('approveRequest', 'approveRequest')->name('anotherAccount.approveRequest');
     });
 
+    // Category Module Routes Group
     Route::controller(CategoryController::class)->group(function () {
         Route::get('category', 'category')->name('category');
         Route::get('categoryList', 'categoryList')->name('category.list');
@@ -67,6 +75,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('categoryDelete', 'categoryDelete')->name('category.delete');
     });
 
+    // Transaction Module Routes Group
     Route::controller(TransactionController::class)->group(function () {
         Route::get('transaction/{id?}', 'transaction')->name('transaction');
         Route::get('transactionList', 'transactionList')->name('transaction.list');

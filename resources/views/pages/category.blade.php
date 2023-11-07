@@ -16,7 +16,7 @@
             {{-- Add Category Button --}}
             <a class="btn btn-primary btn-icon-split d-none d-sm-inline-block shadow-sm" id="openCategoryModal">
                 <span class="icon text-white-50">
-                    <i class="fas fa-solid fa-user-plus"></i>
+                    <i class="fas fa-plus"></i>
                 </span>
                 <span class="text">Add Category</span>
             </a>
@@ -188,8 +188,6 @@
 
                             var categoryListTable = $('#categoryListTable').dataTable();
                             categoryListTable.fnDraw(false);
-
-                            $('#deleteCategoryModal').modal('hide');
                         }
                     })
                 }

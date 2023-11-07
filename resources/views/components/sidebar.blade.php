@@ -33,6 +33,13 @@
             <span>Category</span></a>
     </li>
 
+    {{-- Category Tab --}}
+    <li class="nav-item @if(Request::path() == 'anotherAccount') active @endif">
+        <a class="nav-link" href="{{ route('anotherAccount') }}">
+            <i class="fas fa-at"></i>
+            <span>Another Account</span></a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 

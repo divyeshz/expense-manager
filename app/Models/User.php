@@ -42,4 +42,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /* Add Relationship To accounts Table */
+    public function accounts()
+    {
+        return $this->hasMany(Account::class,'owner_id');
+    }
 }

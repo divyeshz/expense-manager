@@ -55,7 +55,6 @@
 
     <script>
         $(document).ready(function() {
-            // accountList();
 
             $('#accountListTable').DataTable({
                 processing: true,
@@ -170,38 +169,6 @@
                     });
                 }
             });
-        }
-
-        function deleteTransaction(id = "") {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: 'post',
-                        dataType: 'json',
-                        data: {
-                            id: id,
-                            _token: "{{ csrf_token() }}"
-                        },
-                        url: "{{ route('transaction.delete') }}",
-                        success: function(response) {
-                            if (response.status == "200") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
-                            }
-                            transactionList();
-                        }
-                    });
-                }
-            })
         }
 
         function deleteAccount(id = "") {

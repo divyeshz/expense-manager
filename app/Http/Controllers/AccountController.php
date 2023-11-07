@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Account;
-use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\DataTables;
 use App\Models\Transaction;
+use Illuminate\Http\Request;
+use App\Models\AccountRequests;
+use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {
@@ -169,6 +172,207 @@ class AccountController extends Controller
             $response = [
                 'status' => '400',
                 'message' => 'Account Not Found!!!'
+            ];
+        }
+        return $response;
+    }
+
+
+    /* Another Account function */
+
+    // Return Another Account View Page
+    public function anotherAccount()
+    {
+        return view('pages.anotherAccount');
+    }
+
+    // Return Another Account Request List table With yajra Datatable
+    public function anotherAccountRequestList(Request $request)
+    {
+        $accountRequestsData = AccountRequests::where('account_owner_id', auth()->id())->get();
+        $tableData = [];
+
+        if (count($accountRequestsData) > 0) {
+            foreach ($accountRequestsData as $key => $value) {
+                $sender_id = $value->sender_id;
+                $account_id = $value->account_id;
+                $id = $value->id;
+                $is_approved = $value->is_approved;
+            }
+
+            $accountData = Account::where('owner_id', auth()->id())->where('id', $account_id)->get();
+            if (count($accountData) > 0) {
+                foreach ($accountData as $key => $value) {
+                    $accountName = $value->name;
+                }
+            }
+
+            $senderAccountData = User::findOrFail($sender_id);
+            $senderName = $senderAccountData->name;
+            $tableData[] = [
+                'id' => $id,
+                'accountName' => $accountName,
+                'senderName' => $senderName,
+                'is_approved' => $is_approved,
+            ];
+        }
+
+        if ($request->ajax()) {
+            return Datatables::of($tableData)
+                ->addColumn('#', function () {
+                    static $counter = 0;
+                    $counter++;
+                    return $counter;
+                })
+                ->addColumn('sender_name', function ($row) {
+                    return $row['senderName'];
+                })
+                ->addColumn('account_name', function ($row) {
+                    return $row['accountName'];
+                })
+                ->addColumn('action', function ($row) {
+                    $is_disabled = $row['is_approved'] == 0 ? "" : "disabled";
+                    $actionBtn = '<button type="button" class="btn btn-success editAccountModal" ' . $is_disabled . ' onclick=approveRequest(' . $row['id'] . ')>Approve</button>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+    }
+
+    // Return List of Account of Particular user
+    public function findAnotherAccount(Request $request)
+    {
+
+        $findAnotherAccount = false;
+        $validator = Validator::make($request->all(), [
+            'email' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('anotherAccount')->withErrors($validator);
+        }
+
+        if (Auth::user()->email == $request->email) {
+            $findAnotherAccount = false;
+        } else {
+            $user = User::where('email', $request->email)->first();
+            $accounts = $user->accounts;
+            if (count($accounts)) {
+                $findAnotherAccount = true;
+            }
+        }
+
+        if ($findAnotherAccount) {
+
+            $response = [
+                'status' => '200',
+                'message' => 'Another Account Find SuccessFully!!!',
+                'accounts' => $accounts
+            ];
+        } else {
+            $response = [
+                'status' => '400',
+                'message' => 'Invaild Credential!!!'
+            ];
+        }
+        return $response;
+    }
+
+    // Send the Request For Access Another Account
+    public function requestAnotherAccount(Request $request)
+    {
+        // get the Request Account Data
+        $accountData = Account::where('owner_id', $request->owner_id)->where('id', $request->id)->get();
+        if (count($accountData) > 0) {
+            foreach ($accountData as $key => $value) {
+                $accountName = $value->name;
+                $accountNumber = $value->account_number;
+            }
+        }
+
+        // Chek If Account Alredy Exists
+        $currentAccountData = Account::where('owner_id', auth()->id())->get();
+        if (count($currentAccountData) > 0) {
+            foreach ($currentAccountData as $key => $value) {
+                $currentAccountId = $value->id;
+                $currentAccountName = $value->name;
+                $currentAccountNumber = $value->account_number;
+                $currentAccountOwnerId = $value->owner_id;
+                if($currentAccountName == $accountName && $currentAccountNumber == $accountNumber && $currentAccountOwnerId == auth()->id()){
+                    return $response = [
+                        'status' => '400',
+                        'message' => 'Account Alredy Exists!!!'
+                    ];
+                }
+            }
+        }
+
+        // chek If Request is Alredy Send
+        $alredyRequestSend = AccountRequests::where([
+            ['sender_id', auth()->id()],
+            ['account_id', $request->id],
+            ['account_owner_id', $request->owner_id],
+        ])->get();
+
+        if (count($alredyRequestSend) > 0) {
+            $response = [
+                'status' => '400',
+                'message' => 'Request Alredy Submitted!!!'
+            ];
+        } else {
+            if ($request->email != "" && $request->owner_id != "" && $request->id != "") {
+                AccountRequests::create([
+                    'sender_id' => auth()->id(),
+                    'account_id' => $request->id,
+                    'account_owner_id' => $request->owner_id,
+                ]);
+
+                $response = [
+                    'status' => '200',
+                    'message' => 'Request Sent SuccessFully!!!'
+                ];
+            } else {
+                $response = [
+                    'status' => '400',
+                    'message' => 'Invaild Credential!!!'
+                ];
+            }
+        }
+        return $response;
+    }
+
+    // Approve the Request and Add that user data into Account table and make Approve status 1
+    public function approveRequest(Request $request)
+    {
+
+        $RequestsData = AccountRequests::findOrFail($request->id);
+        if ($RequestsData) {
+            $accountData = Account::where('owner_id', $RequestsData->account_owner_id)->where('id', $RequestsData->account_id)->get();
+            if (count($accountData) > 0) {
+                foreach ($accountData as $key => $value) {
+                    $accountName = $value->name;
+                    $accountNumber = $value->account_number;
+                }
+
+                $edit = AccountRequests::where('id', $request->id)->update(["is_approved" => 1]);
+
+                // store the data
+                Account::create([
+                    'name' => $accountName,
+                    'account_number' => $accountNumber,
+                    'owner_id' =>  $RequestsData->sender_id,
+                ]);
+
+                $response = [
+                    'status' => '200',
+                    'message' => 'Request Approved SuccessFully!!!'
+                ];
+            }
+        } else {
+            $response = [
+                'status' => '400',
+                'message' => 'Invalid Request!!!'
             ];
         }
         return $response;
