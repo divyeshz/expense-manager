@@ -63,11 +63,20 @@ class UserController extends Controller
             return redirect()->route('forgotPasswordForm')->withErrors($validator);
         }
 
+        $valid = true;
         $user = User::where('email', $request->email)->first();
-
         if (!$user) {
+            $valid = false;
             return redirect()->route('forgotPasswordForm')->with('error', 'Invaild Credential!!!');
-        } else {
+        }
+
+        $prt_data = DB::table('password_reset_tokens')->where('email', $request->email)->where('token','!=','')->first();
+        if ($prt_data != null) {
+            $valid = false;
+            return redirect()->route('forgotPasswordForm')->with('error', 'Mail is already sent. check your email!!!');
+        }
+
+        if ($valid) {
             $token = Str::random(100);
             DB::table('password_reset_tokens')->insert([
                 'email' => $user->email,
