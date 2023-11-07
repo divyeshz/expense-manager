@@ -39,13 +39,9 @@ class CategoryController extends Controller
     // Save New Category Data Into Database And Return Response to Ajax Call
     public function categorySave(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
+        $request->validate([
+            'name'              => 'required|string',
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('category')->withErrors($validator);
-        }
 
         // store the data
         $add = Category::create([
@@ -54,13 +50,13 @@ class CategoryController extends Controller
 
         if ($add) {
             $response = [
-                'status' => 'success',
-                'message' => 'Category Created SuccessFully!!!'
+                'status'    => 'success',
+                'message'   => 'Category Created SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => 'error',
-                'message' => 'Category Created failed!!!'
+                'status'    => 'error',
+                'message'   => 'Category Created failed!!!'
             ];
         }
         return $response;
@@ -76,14 +72,10 @@ class CategoryController extends Controller
     public function categoryEdit(Request $request)
     {
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'edit_category_id' => 'required'
+        $request->validate([
+            'name'              => 'required|string',
+            'edit_category_id'  => 'required|integer'
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('category')->withErrors($validator);
-        }
 
         $update = [
             'name' => $request->name,
@@ -112,13 +104,13 @@ class CategoryController extends Controller
 
         if ($delete) {
             $response = [
-                'status' => 'success',
-                'message' => 'Category Deleted SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Category Deleted SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => 'error',
-                'message' => 'Category Deleted Failed!!!'
+                'status'    => '400',
+                'message'   => 'Category Deleted Failed!!!'
             ];
         }
         return $response;

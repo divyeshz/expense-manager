@@ -49,13 +49,16 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Account Module Routes Group
     Route::controller(AccountController::class)->group(function () {
-        Route::get('account', 'account')->name('account');
-        Route::get('accountList', 'accountList')->name('account.list');
-        Route::get('accountView', 'accountView')->name('account.view');
-        Route::post('accountSave', 'accountSave')->name('account.save');
-        Route::post('accountEdit', 'accountEdit')->name('account.edit');
-        Route::post('accountDelete', 'accountDelete')->name('account.delete');
-        Route::post('addBalance', 'addBalance')->name('addBalance');
+
+        Route::prefix('account')->group(function () {
+            Route::get('/', 'account')->name('account');
+            Route::get('list', 'accountList')->name('account.list');
+            Route::get('view', 'accountView')->name('account.view');
+            Route::post('save', 'accountSave')->name('account.save');
+            Route::post('edit', 'accountEdit')->name('account.edit');
+            Route::post('delete', 'accountDelete')->name('account.delete');
+            Route::post('addBalance', 'addBalance')->name('addBalance');
+        });
 
         // Another Account Routes
         Route::get('anotherAccount', 'anotherAccount')->name('anotherAccount');
@@ -66,13 +69,13 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     // Category Module Routes Group
-    Route::controller(CategoryController::class)->group(function () {
-        Route::get('category', 'category')->name('category');
-        Route::get('categoryList', 'categoryList')->name('category.list');
-        Route::post('categorySave', 'categorySave')->name('category.save');
-        Route::get('categoryView', 'categoryView')->name('category.view');
-        Route::post('categoryEdit', 'categoryEdit')->name('category.edit');
-        Route::post('categoryDelete', 'categoryDelete')->name('category.delete');
+    Route::controller(CategoryController::class)->prefix('category')->group(function () {
+        Route::get('/', 'category')->name('category');
+        Route::get('list', 'categoryList')->name('category.list');
+        Route::post('save', 'categorySave')->name('category.save');
+        Route::get('view', 'categoryView')->name('category.view');
+        Route::post('edit', 'categoryEdit')->name('category.edit');
+        Route::post('delete', 'categoryDelete')->name('category.delete');
     });
 
     // Transaction Module Routes Group

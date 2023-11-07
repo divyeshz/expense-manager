@@ -52,13 +52,13 @@ class AccountController extends Controller
 
         if ($delete) {
             $response = [
-                'status' => '200',
-                'message' => 'Account Deleted SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Account Deleted SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Account Deleted Failed!!!'
+                'status'    => '400',
+                'message'   => 'Account Deleted Failed!!!'
             ];
         }
         return $response;
@@ -73,33 +73,28 @@ class AccountController extends Controller
     // Edit Account Data And Update Database Record And Return Response to Ajax Call
     public function accountEdit(Request $request)
     {
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'account_number' => 'required',
-            'edit_account_id' => 'required'
+        $request->validate([
+            'name'              => 'required|string',
+            'account_number'    => 'required|numeric',
+            'edit_account_id'   => 'required|integer'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->route('account')->withErrors($validator);
-        }
-
         $update = [
-            'name' => $request->name,
-            'account_number' => $request->account_number,
+            'name'              => $request->name,
+            'account_number'    => $request->account_number,
         ];
 
-        $edit = Account::where('id', $request->edit_account_id)->where('owner_id', auth()->id())->update($update);
+        $edit = Account::findOrFail($request->edit_account_id)->where('owner_id', auth()->id())->update($update);
 
         if ($edit) {
             $response = [
-                'status' => '200',
-                'message' => 'Account updated SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Account updated SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => ' Account updated failed!!!'
+                'status'    => '400',
+                'message'   => ' Account updated failed!!!'
             ];
         }
         return $response;
@@ -108,31 +103,28 @@ class AccountController extends Controller
     // Save New Account Data Into Database And Return Response to Ajax Call
     public function accountSave(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'account_number' => 'required',
-        ]);
 
-        if ($validator->fails()) {
-            return redirect()->route('account')->withErrors($validator);
-        }
+        $request->validate([
+            'name'              => 'required|string',
+            'account_number'    => 'required|numeric',
+        ]);
 
         // store the data
         $add = Account::create([
-            'name' => $request->name,
-            'account_number' => $request->account_number,
-            'owner_id' => auth()->id(),
+            'name'              => $request->name,
+            'account_number'    => $request->account_number,
+            'owner_id'          => auth()->id(),
         ]);
 
         if ($add) {
             $response = [
-                'status' => '200',
-                'message' => 'Account Created SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Account Created SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Account Created failed!!!'
+                'status'    => '400',
+                'message'   => 'Account Created failed!!!'
             ];
         }
         return $response;
@@ -141,14 +133,10 @@ class AccountController extends Controller
     // Add Balance to Specific Account And Return Response to Ajax Call
     public function addBalance(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'balance' => 'required',
-            'add_balance_account_id' => 'required',
+        $request->validate([
+            'balance'                   => 'required|numeric',
+            'add_balance_account_id'    => 'required|numeric'
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('account')->withErrors($validator);
-        }
 
         $account = Account::findOrFail($request->add_balance_account_id);
 
@@ -157,21 +145,21 @@ class AccountController extends Controller
             $account->save();
 
             $add_Transaction = Transaction::create([
-                'account_id' => $request->add_balance_account_id,
-                'transaction_type' => '1',
-                'amount' => $request->balance,
-                'description' => 'Add Account Balance',
-                'transaction_by' => auth()->id()
+                'account_id'        => $request->add_balance_account_id,
+                'transaction_type'  => '1',
+                'amount'            => $request->balance,
+                'description'       => 'Add Account Balance',
+                'transaction_by'    => auth()->id()
             ]);
 
             $response = [
-                'status' => '200',
-                'message' => 'Balance Add SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Balance Add SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Account Not Found!!!'
+                'status'    => '400',
+                'message'   => 'Account Not Found!!!'
             ];
         }
         return $response;
@@ -194,10 +182,10 @@ class AccountController extends Controller
 
         if (count($accountRequestsData) > 0) {
             foreach ($accountRequestsData as $key => $value) {
-                $sender_id = $value->sender_id;
-                $account_id = $value->account_id;
-                $id = $value->id;
-                $is_approved = $value->is_approved;
+                $sender_id      = $value->sender_id;
+                $account_id     = $value->account_id;
+                $id             = $value->id;
+                $is_approved    = $value->is_approved;
             }
 
             $accountData = Account::where('owner_id', auth()->id())->where('id', $account_id)->get();
@@ -210,10 +198,10 @@ class AccountController extends Controller
             $senderAccountData = User::findOrFail($sender_id);
             $senderName = $senderAccountData->name;
             $tableData[] = [
-                'id' => $id,
-                'accountName' => $accountName,
-                'senderName' => $senderName,
-                'is_approved' => $is_approved,
+                'id'            => $id,
+                'accountName'   => $accountName,
+                'senderName'    => $senderName,
+                'is_approved'   => $is_approved,
             ];
         }
 
@@ -245,13 +233,9 @@ class AccountController extends Controller
     {
 
         $findAnotherAccount = false;
-        $validator = Validator::make($request->all(), [
-            'email' => 'required'
+        $request->validate([
+            'email'              => 'required|email',
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('anotherAccount')->withErrors($validator);
-        }
 
         if (Auth::user()->email == $request->email) {
             $findAnotherAccount = false;
@@ -266,14 +250,14 @@ class AccountController extends Controller
         if ($findAnotherAccount) {
 
             $response = [
-                'status' => '200',
-                'message' => 'Another Account Find SuccessFully!!!',
-                'accounts' => $accounts
+                'status'    => '200',
+                'message'   => 'Another Account Find SuccessFully!!!',
+                'accounts'  => $accounts
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Invaild Credential!!!'
+                'status'    => '400',
+                'message'   => 'Invaild Credential!!!'
             ];
         }
         return $response;
@@ -286,8 +270,8 @@ class AccountController extends Controller
         $accountData = Account::where('owner_id', $request->owner_id)->where('id', $request->id)->get();
         if (count($accountData) > 0) {
             foreach ($accountData as $key => $value) {
-                $accountName = $value->name;
-                $accountNumber = $value->account_number;
+                $accountName    = $value->name;
+                $accountNumber  = $value->account_number;
             }
         }
 
@@ -299,7 +283,7 @@ class AccountController extends Controller
                 $currentAccountName = $value->name;
                 $currentAccountNumber = $value->account_number;
                 $currentAccountOwnerId = $value->owner_id;
-                if($currentAccountName == $accountName && $currentAccountNumber == $accountNumber && $currentAccountOwnerId == auth()->id()){
+                if ($currentAccountName == $accountName && $currentAccountNumber == $accountNumber && $currentAccountOwnerId == auth()->id()) {
                     return $response = [
                         'status' => '400',
                         'message' => 'Account Alredy Exists!!!'
@@ -317,25 +301,25 @@ class AccountController extends Controller
 
         if (count($alredyRequestSend) > 0) {
             $response = [
-                'status' => '400',
-                'message' => 'Request Alredy Submitted!!!'
+                'status'    => '400',
+                'message'   => 'Request Alredy Submitted!!!'
             ];
         } else {
             if ($request->email != "" && $request->owner_id != "" && $request->id != "") {
                 AccountRequests::create([
-                    'sender_id' => auth()->id(),
-                    'account_id' => $request->id,
-                    'account_owner_id' => $request->owner_id,
+                    'sender_id'         => auth()->id(),
+                    'account_id'        => $request->id,
+                    'account_owner_id'  => $request->owner_id,
                 ]);
 
                 $response = [
-                    'status' => '200',
-                    'message' => 'Request Sent SuccessFully!!!'
+                    'status'    => '200',
+                    'message'   => 'Request Sent SuccessFully!!!'
                 ];
             } else {
                 $response = [
-                    'status' => '400',
-                    'message' => 'Invaild Credential!!!'
+                    'status'    => '400',
+                    'message'   => 'Invaild Credential!!!'
                 ];
             }
         }
@@ -359,20 +343,20 @@ class AccountController extends Controller
 
                 // store the data
                 Account::create([
-                    'name' => $accountName,
-                    'account_number' => $accountNumber,
-                    'owner_id' =>  $RequestsData->sender_id,
+                    'name'              => $accountName,
+                    'account_number'    => $accountNumber,
+                    'owner_id'          =>  $RequestsData->sender_id,
                 ]);
 
                 $response = [
-                    'status' => '200',
-                    'message' => 'Request Approved SuccessFully!!!'
+                    'status'    => '200',
+                    'message'   => 'Request Approved SuccessFully!!!'
                 ];
             }
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Invalid Request!!!'
+                'status'    => '400',
+                'message'   => 'Invalid Request!!!'
             ];
         }
         return $response;

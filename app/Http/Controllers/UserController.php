@@ -55,13 +55,9 @@ class UserController extends Controller
     public function forgotPassword(Request $request)
     {
         // Validate Data
-        $validator = Validator::make($request->all(), [
-            'email' => 'required'
+        $request->validate([
+            'email' => 'required|email'
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('forgotPasswordForm')->withErrors($validator);
-        }
 
         $valid = true;
         $user = User::where('email', $request->email)->first();
@@ -79,9 +75,9 @@ class UserController extends Controller
         if ($valid) {
             $token = Str::random(100);
             DB::table('password_reset_tokens')->insert([
-                'email' => $user->email,
-                'token' => $token,
-                'created_at' => Carbon::now(),
+                'email'         => $user->email,
+                'token'         => $token,
+                'created_at'    => Carbon::now(),
             ]);
 
             dispatch(function () use ($user, $token) {
@@ -116,16 +112,11 @@ class UserController extends Controller
         } else {
 
             // Validate Data
-            $validate = Validator::make($request->all(), [
-                'prt_token' => 'required',
-                'password' => 'required|min:6',
-                'confirm_password' => 'required|min:6|same:password',
+            $request->validate([
+                'prt_token'         => 'required',
+                'password'          => 'required|min:6',
+                'confirm_password'  => 'required|min:6|same:password',
             ]);
-
-            // If Validation Fails Than Redirect And Show Validation Error
-            if ($validate->fails()) {
-                return redirect()->back()->withErrors($validate);
-            }
 
             $user->update([
                 'password' => Hash::make($request->password)
@@ -148,16 +139,12 @@ class UserController extends Controller
     {
 
         // Validate Data
-        $validate = Validator::make($request->all(), [
-            'old_password' => 'required|min:6',
-            'new_password' => 'required|min:6',
-            'confirm_new_password' => 'required|min:6|same:new_password',
+        $request->validate([
+            'old_password'          => 'required|min:6',
+            'new_password'          => 'required|min:6',
+            'confirm_new_password'  => 'required|min:6|same:new_password',
         ]);
 
-        // If Validation Fails Than Redirect And Show Validation Error
-        if ($validate->fails()) {
-            return redirect()->route('changePasswordForm')->withErrors($validate);
-        }
         $user = User::where('email', Auth::user()->email)->first();
 
         if ($user && Hash::check($request->old_password, $user->password)) {
@@ -175,33 +162,24 @@ class UserController extends Controller
     public function register(Request $request)
     {
         // Validate Data
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'email' => ['required', 'email', 'unique:users', function ($attribute, $value, $fail) {
-                if (substr($value, -4) !== '.com') {
-                    $fail($attribute . ' must end with .com');
-                }
-            },],
-            'password' => 'required|min:6',
-            'confirm_password' => 'required|min:6|same:password',
+        $request->validate([
+            'name'              => 'required|string',
+            'password'          => 'required|min:6',
+            'confirm_password'  => 'required|min:6|same:password',
+            'email'             => 'required|email'
         ]);
 
-        // If Validation Fails Than Redirect And Show Validation Error
-        if ($validator->fails()) {
-            return redirect('registration')->withErrors($validator);
-        }
-
         $data = [
-            'name' => $request->get('name'),
-            'email' => $request->get('email'),
-            'password' => $request->get('password'),
+            'name'      => $request->get('name'),
+            'email'     => $request->get('email'),
+            'password'  => $request->get('password'),
         ];
 
         // Store data Into User Table
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
         ]);
 
         dispatch(function () use ($user, $data) {
@@ -213,10 +191,10 @@ class UserController extends Controller
         $randomNumber = random_int($min, $max);
 
         Account::create([
-            'name' => $user->name,
-            'email' => $user->email,
-            'account_number' => $randomNumber,
-            'owner_id' => $user->id
+            'name'              => $user->name,
+            'email'             => $user->email,
+            'account_number'    => $randomNumber,
+            'owner_id'          => $user->id
         ]);
 
         return redirect('/')->with('success', 'Register SuccessFully!!!  Now Login.');
@@ -226,15 +204,10 @@ class UserController extends Controller
     public function login(Request $request)
     {
         // Validate Data
-        $validate = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|min:6',
+        $request->validate([
+            'email'     => 'required|email',
+            'password'  => 'required|min:6',
         ]);
-
-        // If Validation Fails Than Redirect And Show Validation Error
-        if ($validate->fails()) {
-            return redirect('/')->withErrors($validate);
-        }
 
         // Attempt for Login With User Credentials
         $credential = $request->only('email', 'password');

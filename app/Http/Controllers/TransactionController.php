@@ -125,13 +125,13 @@ class TransactionController extends Controller
 
                 // store the data For Sender Side
                 $FirstTransactionAdd = Transaction::create([
-                    'account_id' => $account_id,
-                    'transaction_type' => $transaction_type,
-                    'amount' => $amount,
-                    'description' => $description,
-                    'is_transfer' => $is_transfer,
-                    'receiver_id' => $receiver,
-                    'transaction_by' => auth()->id()
+                    'account_id'        => $account_id,
+                    'transaction_type'  => $transaction_type,
+                    'amount'            => $amount,
+                    'description'       => $description,
+                    'is_transfer'       => $is_transfer,
+                    'receiver_id'       => $receiver,
+                    'transaction_by'    => auth()->id()
                 ]);
                 $FirstTransaction_id = $FirstTransactionAdd->id;
 
@@ -143,13 +143,13 @@ class TransactionController extends Controller
 
                 // store the data For Receiver Side
                 $SecondTransactionAdd = Transaction::create([
-                    'account_id' => $receiver,
-                    'transaction_type' => '1',
-                    'amount' => $amount,
-                    'description' => "Add Transfer Amount",
-                    'is_transfer' => $is_transfer,
-                    'receiver_id' => $account_id,
-                    'transaction_by' => auth()->id()
+                    'account_id'        => $receiver,
+                    'transaction_type'  => '1',
+                    'amount'            => $amount,
+                    'description'       => "Add Transfer Amount",
+                    'is_transfer'       => $is_transfer,
+                    'receiver_id'       => $account_id,
+                    'transaction_by'    => auth()->id()
                 ]);
 
                 /* Calculate Account Balance And Store Into Account For Receiver */
@@ -207,10 +207,10 @@ class TransactionController extends Controller
         $transaction = Transaction::where('account_id', $request->id)->where('transaction_by', auth()->id())->get();
         $account = Account::findOrFail($request->id);
         $response = [
-            'status' => '200',
-            'message' => 'Transaction And User Data',
-            'transaction' => $transaction,
-            'account' => $account
+            'status'        => '200',
+            'message'       => 'Transaction And User Data',
+            'transaction'   => $transaction,
+            'account'       => $account
         ];
         return json_encode($response);
     }
@@ -227,21 +227,21 @@ class TransactionController extends Controller
 
         if ($transaction_type == '1' && $is_transfer == '1' && $receiver_id != '' && $account_id != "") {
             $response = [
-                'status' => '400',
-                'message' => "You Can't Update This Transaction!!!",
+                'status'    => '400',
+                'message'   => "You Can't Update This Transaction!!!",
             ];
         } else {
             if ($transaction) {
                 $response = [
-                    'status' => '200',
-                    'message' => 'SuccessFully Get The Transaction Data',
-                    'transaction' => $transaction,
+                    'status'                => '200',
+                    'message'               => 'SuccessFully Get The Transaction Data',
+                    'transaction'           => $transaction,
                     'transaction_categorie' => $transaction_categorie,
                 ];
             } else {
                 $response = [
-                    'status' => '400',
-                    'message' => 'Failed To Get Transaction Data'
+                    'status'    => '400',
+                    'message'   => 'Failed To Get Transaction Data'
                 ];
             }
         }
@@ -251,16 +251,13 @@ class TransactionController extends Controller
     /* Save Transaction Into Database */
     public function transactionSave(Request $request)
     {
-        // Validate Data
-        $validator = Validator::make($request->all(), [
-            'account_id' => 'required',
-            'amount' => 'required|numeric',
-            'transaction_type' => 'required'
-        ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator);
-        }
+        // Validate Data
+        $request->validate([
+            'account_id'        => 'required|integer',
+            'amount'            => 'required|numeric',
+            'transaction_type'  => 'required',
+        ]);
 
         $save = false; // flag Variable for Store the data into Database
 
@@ -279,8 +276,8 @@ class TransactionController extends Controller
 
             if ($SaveTransactionForTransfer == false) {
                 $response = [
-                    'status' => '400',
-                    'message' => 'Not Enough Balance!!!'
+                    'status'    => '400',
+                    'message'   => 'Not Enough Balance!!!'
                 ];
                 return json_encode($response);
             }
@@ -290,8 +287,8 @@ class TransactionController extends Controller
             /* If Select Wrong Transaction Type Than Show Error */
             if ($transaction_type == '1' && $is_transfer == '1') {
                 $response = [
-                    'status' => '400',
-                    'message' => 'Please Select Valid Transaction Type For Transfer!!!'
+                    'status'    => '400',
+                    'message'   => 'Please Select Valid Transaction Type For Transfer!!!'
                 ];
                 return json_encode($response);
             }
@@ -304,13 +301,13 @@ class TransactionController extends Controller
 
                 // store the data
                 $add = Transaction::create([
-                    'account_id' => $account_id,
-                    'transaction_type' => $transaction_type,
-                    'amount' => $amount,
-                    'description' => $description,
-                    'is_transfer' => $is_transfer,
-                    'receiver_id' => $receiver,
-                    'transaction_by' => auth()->id()
+                    'account_id'        => $account_id,
+                    'transaction_type'  => $transaction_type,
+                    'amount'            => $amount,
+                    'description'       => $description,
+                    'is_transfer'       => $is_transfer,
+                    'receiver_id'       => $receiver,
+                    'transaction_by'    => auth()->id()
                 ]);
                 $transaction_id = $add->id;
 
@@ -321,8 +318,8 @@ class TransactionController extends Controller
                 $AccountBalanceCalculation = $this->AccountBalanceCalculation($account_id);
             } else {
                 $response = [
-                    'status' => '400',
-                    'message' => 'Not Enough Balance!!!'
+                    'status'    => '400',
+                    'message'   => 'Not Enough Balance!!!'
                 ];
                 return json_encode($response);
             }
@@ -332,13 +329,13 @@ class TransactionController extends Controller
         /* If Save Flag Is True Than Return 200 Otherwise 400  */
         if ($save) {
             $response = [
-                'status' => '200',
-                'message' => 'Transaction Added SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Transaction Added SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Transaction Added Failed!!!'
+                'status'    => '400',
+                'message'   => 'Transaction Added Failed!!!'
             ];
         }
         return json_encode($response);
@@ -351,16 +348,12 @@ class TransactionController extends Controller
         $save = false; //flag Variable for Store the data into Database
 
         // Validate Data
-        $validator = Validator::make($request->all(), [
-            'edit_transaction_id' => 'required',
-            'account_id' => 'required',
-            'amount' => 'required|numeric',
-            'transaction_type' => 'required'
+        $request->validate([
+            'edit_transaction_id'   => 'required|integer',
+            'account_id'            => 'required|integer',
+            'amount'                => 'required|numeric',
+            'transaction_type'      => 'required',
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator);
-        }
 
         /* Three Flag Variable For Store, Update, Create and Delete */
         $updateTransaction = false;
@@ -442,8 +435,8 @@ class TransactionController extends Controller
                     /*  Account Balance is Bigger than Amount than return Error otherwise Update transaction  */
                     if (($editTimeAccountBalance < $newAmount)) {
                         $response = [
-                            'status' => '400',
-                            'message' => 'Not Enough Balance In Account!!!'
+                            'status'    => '400',
+                            'message'   => 'Not Enough Balance In Account!!!'
                         ];
                         return json_encode($response);
                     } else {
@@ -570,13 +563,13 @@ class TransactionController extends Controller
 
                     // store the data For Receiver Side
                     $SecondTransactionAdd = Transaction::create([
-                        'account_id' => $receiver,
-                        'transaction_type' => '1',
-                        'amount' => $newAmount,
-                        'description' => "Add Transfer Amount",
-                        'is_transfer' => $is_transfer,
-                        'receiver_id' => $account_id,
-                        'transaction_by' => auth()->id()
+                        'account_id'        => $receiver,
+                        'transaction_type'  => '1',
+                        'amount'            => $newAmount,
+                        'description'       => "Add Transfer Amount",
+                        'is_transfer'       => $is_transfer,
+                        'receiver_id'       => $account_id,
+                        'transaction_by'    => auth()->id()
                     ]);
 
                     /* Update Account Balance Calculation For Second Transaction user */
@@ -587,13 +580,13 @@ class TransactionController extends Controller
 
         if ($save) {
             $response = [
-                'status' => '200',
-                'message' => 'Transaction Update SuccessFully!!!'
+                'status'    => '200',
+                'message'   => 'Transaction Update SuccessFully!!!'
             ];
         } else {
             $response = [
-                'status' => '400',
-                'message' => 'Transaction Update Failed!!!'
+                'status'    => '400',
+                'message'   => 'Transaction Update Failed!!!'
             ];
         }
         return json_encode($response);
@@ -616,8 +609,8 @@ class TransactionController extends Controller
         /* If Transaction type Is Income And Transfer Is True And Receiver not Empty Account not Empty than Return Error */
         if ($transaction_type == '1' && $is_transfer == '1' && $receiver_id != '' && $account_id != "") {
             $response = [
-                'status' => '400',
-                'message' => "You Can't Delete This Transaction!!!",
+                'status'    => '400',
+                'message'   => "You Can't Delete This Transaction!!!",
             ];
         }
 
@@ -645,13 +638,13 @@ class TransactionController extends Controller
                 $AccountBalanceCalculation = $this->AccountBalanceCalculation($account_id);
 
                 $response = [
-                    'status' => '200',
-                    'message' => "Delete This Transaction SuccessFully!!!",
+                    'status'    => '200',
+                    'message'   => "Delete This Transaction SuccessFully!!!",
                 ];
             } else {
                 $response = [
-                    'status' => '400',
-                    'message' => "You Can't Delete This Transaction!!!",
+                    'status'    => '400',
+                    'message'   => "You Can't Delete This Transaction!!!",
                 ];
             }
         }
@@ -669,8 +662,8 @@ class TransactionController extends Controller
                 $AccountBalanceCalculation = $this->AccountBalanceCalculation($account_id);
 
                 $response = [
-                    'status' => '200',
-                    'message' => "Delete This Transaction SuccessFully!!!",
+                    'status'    => '200',
+                    'message'   => "Delete This Transaction SuccessFully!!!",
                 ];
             }
 
@@ -687,13 +680,13 @@ class TransactionController extends Controller
                     /* Call Private Function For Account Balance Calculation */
                     $AccountBalanceCalculation = $this->AccountBalanceCalculation($account_id);
                     $response = [
-                        'status' => '200',
-                        'message' => "Delete This Transaction <SuccessFull></SuccessFull>y!!!",
+                        'status'    => '200',
+                        'message'   => "Delete This Transaction <SuccessFull></SuccessFull>y!!!",
                     ];
                 } else {
                     $response = [
-                        'status' => '400',
-                        'message' => "You Can't Delete This Transaction!!!",
+                        'status'    => '400',
+                        'message'   => "You Can't Delete This Transaction!!!",
                     ];
                 }
             }
