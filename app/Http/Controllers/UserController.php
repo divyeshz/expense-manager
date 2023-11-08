@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Account;
+use App\Models\PasswordResetToken;
 use App\Mail\ForgotPasswordMail;
 use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class UserController extends Controller
             return redirect()->route('forgotPasswordForm')->with('error', 'Invaild Credential!!!');
         }
 
-        $prt_data = DB::table('password_reset_tokens')->where('email', $request->email)->where('token','!=','')->first();
+        $prt_data = PasswordResetToken::where('email', $request->email)->where('token','!=','')->first();
         if ($prt_data != null) {
             $valid = false;
             return redirect()->route('forgotPasswordForm')->with('error', 'Mail is already sent. check your email!!!');
@@ -74,7 +75,7 @@ class UserController extends Controller
 
         if ($valid) {
             $token = Str::random(100);
-            DB::table('password_reset_tokens')->insert([
+            PasswordResetToken::insert([
                 'email'         => $user->email,
                 'token'         => $token,
                 'created_at'    => Carbon::now(),
@@ -91,7 +92,7 @@ class UserController extends Controller
     // Show Reset Password Form
     public function resetPasswordForm($token)
     {
-        $prt_data = DB::table('password_reset_tokens')->where('token', $token)->first();
+        $prt_data = PasswordResetToken::where('token', $token)->first();
 
         if (!$prt_data || Carbon::now()->subminutes(10) > $prt_data->created_at) {
             return redirect()->back()->with('error', 'Invalid password reset link or link is expired.');
@@ -103,7 +104,7 @@ class UserController extends Controller
     // Actual Functionality for Reset Password
     public function resetPassword(Request $request)
     {
-        $prt_data = DB::table('password_reset_tokens')->where('token', $request->prt_token)->first();
+        $prt_data = PasswordResetToken::where('token', $request->prt_token)->first();
         $email = $prt_data->email;
         $user = User::where('email', $email)->first();
 
@@ -122,7 +123,7 @@ class UserController extends Controller
                 'password' => Hash::make($request->password)
             ]);
 
-            $prt_data = DB::table('password_reset_tokens')->where('token', $request->prt_token)->delete();
+            $prt_data = PasswordResetToken::where('token', $request->prt_token)->delete();
 
             return redirect()->route('loginForm')->with('success', 'Password Reset successfully!!!');
         }
@@ -197,7 +198,7 @@ class UserController extends Controller
             'owner_id'          => $user->id
         ]);
 
-        return redirect('/')->with('success', 'Register SuccessFully!!!  Now Login.');
+        return redirect()->route('loginForm')->with('success', 'Register SuccessFully!!!  Now Login.');
     }
 
     // User Login

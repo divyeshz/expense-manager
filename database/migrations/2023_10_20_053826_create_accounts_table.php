@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->string('name',16);
-            $table->string('email',51);
-            $table->string('account_number');
+            $table->string('account_number',10);
             $table->unsignedBigInteger('owner_id')->nullable();
             $table->foreign('owner_id')->references('id')->on('users')->onDelete('CASCADE')->onUpdate('CASCADE');
             $table->double('balance',8, 2)->default(0);
