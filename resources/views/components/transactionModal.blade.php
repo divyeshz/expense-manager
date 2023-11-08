@@ -20,7 +20,7 @@
                     <input type="hidden" class="d-none" id="edit_transaction_id" name="edit_transaction_id">
 
                     {{-- Hidden Field For Account --}}
-                    <input type="hidden" class="d-none" name="account_id" id="account_id">
+                    <input type="hidden" class="d-none" name="account_id" id="account_id" value="{{ $account->id }}">
 
                     {{-- Account Name Field Readonly --}}
                     <div class="form-group">

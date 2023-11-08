@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use App\Models\AccountRequests;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {

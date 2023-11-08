@@ -33,11 +33,14 @@
             line-height: unset;
             width: 100%;
         }
-        #TransactionList .Income{
+        #TransactionListTable .Income{
             color: green
         }
-        #TransactionList .Expense{
+        #TransactionListTable .Expense{
             color: red
+        }
+        #TransactionListTable .Transfer{
+            color: orange
         }
     </style>
 

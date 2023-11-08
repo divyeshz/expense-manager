@@ -33,23 +33,42 @@
             <div class="card-body">
                 <div class="table-responsive">
                     {{-- Transaction list Table --}}
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <table class="table table-bordered" id="TransactionListTable" width="100%" cellspacing="0">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Amount In &#8377;</th>
                                 <th>Description</th>
                                 <th>Transaction Type</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="TransactionList">
-                        </tbody>
                     </table>
                 </div>
                 {{-- Back Button --}}
                 <a href="{{ route('account') }}" type="submit" class="btn btn-secondary">Back</a>
             </div>
         </div>
+
+        <!-- Total Account Balance Card  -->
+        <div class="row justify-content-end balance_card">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Account Balance</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">&#8377;
+                                    <span id="account_balance"> {{ $account->balance }} {{-- Show Account Total Balance --}} </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     <!-- /.container-fluid -->
 
@@ -60,7 +79,76 @@
 @section('jsContent')
     <script>
         $(document).ready(function() {
-            transactionList();
+
+            var currentUrl = window.location.pathname;
+            var segments = currentUrl.split('/');
+            var transaction_id = segments[segments.length - 1];
+
+            updateAccountBalance(transaction_id);
+
+            // make yajra Table
+            $('#TransactionListTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('transaction.list') }}",
+                    type: 'GET',
+                    data: {
+                        id: transaction_id,
+                    },
+                },
+                columns: [{
+                        data: '#',
+                        name: '#'
+                    },
+                    {
+                        data: 'amount_inr',
+                        name: 'amount_inr',
+                    },
+                    {
+                        data: 'description',
+                        name: 'description',
+                    },
+                    {
+                        data: 'transaction_type',
+                        name: 'transaction_type',
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false
+                    },
+                ],
+                columnDefs: [{
+                        targets: 1,
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            var transactionTypeValue = rowData['transaction_type'];
+
+                            if (transactionTypeValue === 'Income') {
+                                $(td).addClass('Income');
+                            } else if (transactionTypeValue === 'Expense') {
+                                $(td).addClass('Expense');
+                            }else if (transactionTypeValue === 'Transfer') {
+                                $(td).addClass('Transfer');
+                            }
+                        }
+                    },
+                    {
+                        targets: 3,
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            var transactionTypeValue = rowData['transaction_type'];
+
+                            if (transactionTypeValue === 'Income') {
+                                $(td).addClass('Income');
+                            } else if (transactionTypeValue === 'Expense') {
+                                $(td).addClass('Expense');
+                            }else if (transactionTypeValue === 'Transfer') {
+                                $(td).addClass('Transfer');
+                            }
+                        }
+                    }
+                ]
+            });
 
             // Reset Transaction Modal Form And open Modal
             $(document).on("click", "#openTransactionModal", function(event) {
@@ -104,87 +192,10 @@
 
         });
 
-        // Get The Transaction List in response And Make Table Row and Attached into Table
-        function transactionList() {
-            var currentUrl = window.location.pathname;
-            var segments = currentUrl.split('/');
-            var transaction_id = segments[segments.length - 1];
-
-            $.ajax({
-                type: 'get',
-                data: {
-                    id: transaction_id,
-                },
-                dataType: 'json',
-                url: "{{ route('transaction.list') }}",
-                success: function(response) {
-                    var tr = '';
-                    var Total_balance = response.account.balance;
-                    if (response.transaction.length > 0) {
-                        for (var i = 0; i < response.transaction.length; i++) {
-
-                            var id = response.transaction[i].id;
-                            var amount = response.transaction[i].amount;
-
-                            var description = (response.transaction[i].description != "" &&
-                                    response.transaction[i].description != null) ? response.transaction[i]
-                                .description : '-';
-
-                            var receiver_id = (response.transaction[i].receiver_id != '' &&
-                                    response.transaction[i].receiver_id != null) ? response.transaction[i]
-                                .receiver_id : '-';
-
-                            var is_transfer = response.transaction[i].is_transfer;
-                            var transaction_type = response.transaction[i].transaction_type;
-                            var transaction_type_class = (transaction_type == '1') ? 'Income' : 'Expense';
-                            var transaction_type_html = "";
-
-                            if (transaction_type == '0') {
-                                if (receiver_id != '' && receiver_id != null && is_transfer == '1') {
-                                    transaction_type_html += 'Transfer';
-                                } else {
-                                    transaction_type_html += 'Expense <i class="fas fa-arrow-up fa-sm"></i>';
-                                }
-                            }
-
-                            if (transaction_type == '1') {
-                                if (receiver_id != '' && receiver_id != null && is_transfer == '1') {
-                                    transaction_type_html += 'Transfer';
-                                } else {
-                                    transaction_type_html +=
-                                        'Income <i class="fas fa-arrow-down fa-sm"></i>';
-                                }
-                            }
-
-                            tr += `<tr>
-                                    <td class="${transaction_type_class}">
-                                        ${amount}
-                                    </td>
-                                    <td>${description}</td>
-                                    <td class="${transaction_type_class}" >${transaction_type_html}</td>
-                                    <td><button type="submit" class="btn btn-primary" onclick=viewTransaction(${id})>Edit</button>
-                                        <button type="submit" onclick=deleteTransaction(${id}) id="transactionDeleteBtn" class="btn btn-danger">Delete</button>
-                                    </td>
-                                 </tr>`;
-                        }
-                    } else {
-                        tr += `<tr>
-                                    <td colspan="4" class="text-center">No Transaction Found</td>
-                                </tr>`;
-                    }
-
-                    var total_balance_tr = `<tr>
-                                                <td colspan="3" class="text-right">Total</td>
-                                                <td>${Total_balance}</td>
-                                            </tr>`;
-                    $('#TransactionList').html(tr).append(total_balance_tr);
-                }
-            });
-        }
-
         // Function For Add & Edit Transaction Using Same Modal Besed on Condition
         function saveTransaction() {
             let edit_transaction_id = $("#TransactionModalForm #edit_transaction_id").val();
+            let account_id = $("#TransactionModalForm #account_id").val();
 
             $("#TransactionModalForm").validate({
                 rules: {
@@ -225,10 +236,13 @@
                             success: function(response) {
                                 if (response.status == "200") {
                                     toastr.success('' + response.message + '');
-                                    transactionList();
+                                    updateAccountBalance(account_id);
                                 } else {
                                     toastr.error('' + response.message + '');
                                 }
+                                var TransactionListTable = $('#TransactionListTable').dataTable();
+                                TransactionListTable.fnDraw(false);
+
                                 $('#TransactionModal').modal('hide');
                             }
                         });
@@ -241,11 +255,13 @@
                             success: function(response) {
                                 if (response.status == "200") {
                                     toastr.success('' + response.message + '');
+                                    updateAccountBalance(account_id);
                                 } else {
                                     toastr.error('' + response.message + '');
                                 }
                                 $('#TransactionModal').modal('hide');
-                                transactionList();
+                                var TransactionListTable = $('#TransactionListTable').dataTable();
+                                TransactionListTable.fnDraw(false);
                             }
 
                         });
@@ -320,6 +336,7 @@
 
         // Delete Transaction Ajax call First Show Sweet Alert After That Submit In Response Show Toast Message And Rerender Transaction List
         function deleteTransaction(id = "") {
+            let account_id = $("#TransactionModalForm #account_id").val();
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -344,7 +361,9 @@
                             } else {
                                 toastr.error('' + response.message + '');
                             }
-                            transactionList();
+                            updateAccountBalance(account_id);
+                            var TransactionListTable = $('#TransactionListTable').dataTable();
+                            TransactionListTable.fnDraw(false);
                         }
                     });
                 }
@@ -385,6 +404,23 @@
                     }
                 }
             }
+        }
+
+        function updateAccountBalance(id) {
+            $.ajax({
+                type: 'POST',
+                data: {
+                    id: id,
+                    _token: "{{ csrf_token() }}"
+                },
+                dataType: 'json',
+                url: "{{ route('accountBalance') }}",
+                success: function(response) {
+                    if(response.status == "200"){
+                        $(".container-fluid .balance_card #account_balance").text(response.balance);
+                    }
+                }
+            })
         }
     </script>
 

@@ -5,192 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
-use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\Facades\DataTables;
 
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-
-    /*  Calculate Account Balance and Save */
-    private function AccountBalanceCalculation($id)
-    {
-        if ($id > 0) {
-            $NewBalance = 0;
-            $AllTransaction = Transaction::where('account_id', $id)->where('transaction_by', auth()->id())->get();
-
-            foreach ($AllTransaction as $key => $value) {
-                $transaction_type = $value->transaction_type;
-                $amount = $value->amount;
-
-                if ($transaction_type == '1') {
-                    $NewBalance += $amount;
-                }
-                if ($transaction_type == '0') {
-                    $NewBalance -= $amount;
-                }
-            }
-
-            /* Check If New Balance amount Is Not Negative  */
-            if ($NewBalance >= 0) {
-                $Account = Account::findOrFail($id);
-                if ($Account) {
-                    $Account->balance = $NewBalance;
-                    $Account->save();
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    /* Calculate Account Balance In Edit Time and Return New Balance Amount */
-    private function editTimeAccountBalanceCalculation($id, $transaction_id)
-    {
-        if ($id > 0) {
-            $NewBalance = 0;
-            $AllTransaction = Transaction::where('account_id', $id)->whereNot('id', $transaction_id)->where('transaction_by', auth()->id())->get();
-
-            foreach ($AllTransaction as $key => $value) {
-                $transaction_type = $value->transaction_type;
-                $amount = $value->amount;
-
-                if ($transaction_type == '1') {
-                    $NewBalance += $amount;
-                }
-                if ($transaction_type == '0') {
-                    $NewBalance -= $amount;
-                }
-            }
-            return $NewBalance;
-        }
-    }
-
-    /* Chek Account Balance Return Balance Amount */
-    private function ChekBalance(string $id)
-    {
-        $account = Account::where('id', $id)->where('owner_id', auth()->id())->get();
-        foreach ($account as $key => $value) {
-            return $value->balance;
-        }
-    }
-
-    /* Get Second Transaction Data That Store For Transfer And If Found Than Retun Data Of Second Transaction */
-    private function GetSecondTransaction(string $id)
-    {
-        /* Get First Transaction Data That Store For Transfer */
-        $firstTransaction = Transaction::findOrFail($id);
-        if ($firstTransaction) {
-            $account_id = $firstTransaction->account_id;
-            $transaction_type = $firstTransaction->transaction_type == '1' ? '0' : '1';
-            $amount = $firstTransaction->amount;
-            $receiver_id = $firstTransaction->receiver_id;
-            $is_transfer = $firstTransaction->is_transfer;
-        }
-
-        /* Get Secound Transaction Data That Store For Transfer */
-        $secondTransaction = Transaction::where([
-            ['account_id', $receiver_id],
-            ['transaction_type', $transaction_type],
-            ['amount', $amount],
-            ['receiver_id', $account_id],
-            ['is_transfer', $is_transfer],
-            ['transaction_by', auth()->id()],
-        ])->get();
-        if (count($secondTransaction) > 0) {
-            return $secondTransaction;
-        } else {
-            return false;
-        }
-    }
-
-    /* Save the Transfer Transaction Into Database */
-    private function SaveTransactionForTransfer($request)
-    {
-        $is_transfer = $request->is_transfer != "" ? $request->is_transfer : '0';
-        $transaction_type = $request->transaction_type;
-        $account_id = $request->account_id;
-        $amount = $request->amount;
-        $description = $request->description;
-        $receiver = $request->receiver;
-
-        /* Chek Transaction type Is Expense And Transfer Is 1 (True) */
-        if ($transaction_type == '0' && $is_transfer == '1') {
-
-            $Balance = $this->ChekBalance($account_id);
-
-            /* Account Balance Is Bigger than Amount  */
-            if ($Balance >= $amount) {
-
-                // store the data For Sender Side
-                $FirstTransactionAdd = Transaction::create([
-                    'account_id'        => $account_id,
-                    'transaction_type'  => $transaction_type,
-                    'amount'            => $amount,
-                    'description'       => $description,
-                    'is_transfer'       => $is_transfer,
-                    'receiver_id'       => $receiver,
-                    'transaction_by'    => auth()->id()
-                ]);
-                $FirstTransaction_id = $FirstTransactionAdd->id;
-
-                /* Add Category Data into Transaction Category Table  */
-                $addTransactionCategory = $this->AddTransactionCategory($request, $FirstTransaction_id);
-
-                /* Calculate Account Balance And Store Into Account For Sender */
-                $FirstAccountBalanceCalculation = $this->AccountBalanceCalculation($account_id);
-
-                // store the data For Receiver Side
-                $SecondTransactionAdd = Transaction::create([
-                    'account_id'        => $receiver,
-                    'transaction_type'  => '1',
-                    'amount'            => $amount,
-                    'description'       => "Add Transfer Amount",
-                    'is_transfer'       => $is_transfer,
-                    'receiver_id'       => $account_id,
-                    'transaction_by'    => auth()->id()
-                ]);
-
-                /* Calculate Account Balance And Store Into Account For Receiver */
-                $SecondAccountBalanceCalculation = $this->AccountBalanceCalculation($receiver);
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    /* Add Selected Transaction Category Data into Transaction Category (Pivot) Table  */
-    private function AddTransactionCategory($request, $transaction_id)
-    {
-        $transaction = Transaction::findOrFail($transaction_id);
-        $category = $request->category;
-        if ($category != null) {
-            for ($i = 0; $i < count($category); $i++) {
-                $transaction->categories()->attach($category[$i]);
-            }
-        }
-    }
-
-    /* Update Selected Transaction Category Data into Transaction Category (Pivot) Table  */
-    private function UpdateTransactionCategory($request, $edit_transaction_id)
-    {
-        /* All The Current Transaction Category Remove From Pivot Table  */
-        $transaction = Transaction::findOrFail($edit_transaction_id);
-        foreach ($transaction->categories as $category) {
-            $transaction->categories()->detach($category['id']);
-        }
-
-        /* Save The New Transaction Category into Pivot Table  */
-        $newCategory = $request->category;
-        if ($newCategory != null) {
-            for ($i = 0; $i < count($newCategory); $i++) {
-                $transaction->categories()->attach($newCategory[$i]);
-            }
-        }
-    }
-
 
     /* Return transaction Page View And With Other Data Like Login user Account, All User Account And List Of Category */
     public function transaction(string $id)
@@ -205,14 +25,57 @@ class TransactionController extends Controller
     public function transactionList(Request $request)
     {
         $transaction = Transaction::where('account_id', $request->id)->where('transaction_by', auth()->id())->get();
-        $account = Account::findOrFail($request->id);
-        $response = [
-            'status'        => '200',
-            'message'       => 'Transaction And User Data',
-            'transaction'   => $transaction,
-            'account'       => $account
-        ];
-        return json_encode($response);
+        $tableData = [];
+
+        if (count($transaction) > 0) {
+            foreach ($transaction as $key => $value) {
+                $id = $value['id'];
+                $amount = $value['amount'];
+                $description = ($value['description'] != "" && $value['description']) ? $value['description'] : '-';
+                $receiver_id = ($value['receiver_id'] != "" && $value['receiver_id']) ? $value['receiver_id'] : '-';
+                $is_transfer = $value['is_transfer'];
+                $transaction_type = $value['transaction_type'];
+                $transaction_type_name = "";
+
+                if ($receiver_id != '' && $receiver_id != null && $is_transfer == '1') {
+                    $transaction_type_name .= 'Transfer';
+                } else {
+                    $transaction_type_name .= ($transaction_type == '1') ? 'Income' : 'Expense';
+                }
+
+                $tableData[] = [
+                    'id'                        => $id,
+                    'amount'                    => $amount,
+                    'description'               => $description,
+                    'transaction_type_name'    => $transaction_type_name,
+                ];
+            }
+
+            if ($request->ajax()) {
+                return Datatables::of($tableData)
+                    ->addColumn('#', function () {
+                        static $counter = 0;
+                        $counter++;
+                        return $counter;
+                    })
+                    ->addColumn('amount_inr', function ($row) {
+                        return $row['amount'];
+                    })
+                    ->addColumn('description', function ($row) {
+                        return $row['description'];
+                    })
+                    ->addColumn('transaction_type', function ($row) {
+                        return html_entity_decode($row['transaction_type_name']);
+                    })
+                    ->addColumn('action', function ($row) {
+                        $actionBtn = '
+                        <button type="submit" class="btn btn-primary" onclick="viewTransaction(' . $row['id'] . ')">Edit</button> <button type="submit" onclick="deleteTransaction(' . $row['id'] . ')" class="btn btn-danger">Delete</button>';
+                        return $actionBtn;
+                    })
+                    ->rawColumns(['transaction_type', 'action'])
+                    ->make(true);
+            }
+        }
     }
 
     /* Fetch Transaction And List of Transaction Categorie And return to ajaxcall */
@@ -692,5 +555,204 @@ class TransactionController extends Controller
             }
         }
         return json_encode($response);
+    }
+    /* Return Account Balance */
+    public function accountBalance(Request $request)
+    {
+        /* Chek Account Balance */
+        $balance = $this->ChekBalance($request->id);
+        if($balance != ""){
+            $response = [
+                'status'    => '200',
+                'message'   => "Account Balance!!!",
+                'balance'   => $balance
+            ];
+        }else{
+            $response = [
+                'status'    => '400',
+                'message'   => "Account Not Balance!!!"
+            ];
+        }
+        return json_encode($response);
+    }
+
+
+    /*  Calculate Account Balance and Save */
+    private function AccountBalanceCalculation($id)
+    {
+        if ($id > 0) {
+            $NewBalance = 0;
+            $AllTransaction = Transaction::where('account_id', $id)->where('transaction_by', auth()->id())->get();
+
+            foreach ($AllTransaction as $key => $value) {
+                $transaction_type = $value->transaction_type;
+                $amount = $value->amount;
+
+                if ($transaction_type == '1') {
+                    $NewBalance += $amount;
+                }
+                if ($transaction_type == '0') {
+                    $NewBalance -= $amount;
+                }
+            }
+
+            /* Check If New Balance amount Is Not Negative  */
+            if ($NewBalance >= 0) {
+                $Account = Account::findOrFail($id);
+                if ($Account) {
+                    $Account->balance = $NewBalance;
+                    $Account->save();
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /* Calculate Account Balance In Edit Time and Return New Balance Amount */
+    private function editTimeAccountBalanceCalculation($id, $transaction_id)
+    {
+        if ($id > 0) {
+            $NewBalance = 0;
+            $AllTransaction = Transaction::where('account_id', $id)->whereNot('id', $transaction_id)->where('transaction_by', auth()->id())->get();
+
+            foreach ($AllTransaction as $key => $value) {
+                $transaction_type = $value->transaction_type;
+                $amount = $value->amount;
+
+                if ($transaction_type == '1') {
+                    $NewBalance += $amount;
+                }
+                if ($transaction_type == '0') {
+                    $NewBalance -= $amount;
+                }
+            }
+            return $NewBalance;
+        }
+    }
+
+    /* Chek Account Balance Return Balance Amount */
+    private function ChekBalance(string $id)
+    {
+        $account = Account::where('id', $id)->where('owner_id', auth()->id())->get();
+        foreach ($account as $key => $value) {
+            return $value->balance;
+        }
+    }
+
+    /* Get Second Transaction Data That Store For Transfer And If Found Than Retun Data Of Second Transaction */
+    private function GetSecondTransaction(string $id)
+    {
+        /* Get First Transaction Data That Store For Transfer */
+        $firstTransaction = Transaction::findOrFail($id);
+        if ($firstTransaction) {
+            $account_id = $firstTransaction->account_id;
+            $transaction_type = $firstTransaction->transaction_type == '1' ? '0' : '1';
+            $amount = $firstTransaction->amount;
+            $receiver_id = $firstTransaction->receiver_id;
+            $is_transfer = $firstTransaction->is_transfer;
+        }
+
+        /* Get Secound Transaction Data That Store For Transfer */
+        $secondTransaction = Transaction::where([
+            ['account_id', $receiver_id],
+            ['transaction_type', $transaction_type],
+            ['amount', $amount],
+            ['receiver_id', $account_id],
+            ['is_transfer', $is_transfer],
+            ['transaction_by', auth()->id()],
+        ])->get();
+        if (count($secondTransaction) > 0) {
+            return $secondTransaction;
+        } else {
+            return false;
+        }
+    }
+
+    /* Save the Transfer Transaction Into Database */
+    private function SaveTransactionForTransfer($request)
+    {
+        $is_transfer = $request->is_transfer != "" ? $request->is_transfer : '0';
+        $transaction_type = $request->transaction_type;
+        $account_id = $request->account_id;
+        $amount = $request->amount;
+        $description = $request->description;
+        $receiver = $request->receiver;
+
+        /* Chek Transaction type Is Expense And Transfer Is 1 (True) */
+        if ($transaction_type == '0' && $is_transfer == '1') {
+
+            $Balance = $this->ChekBalance($account_id);
+
+            /* Account Balance Is Bigger than Amount  */
+            if ($Balance >= $amount) {
+
+                // store the data For Sender Side
+                $FirstTransactionAdd = Transaction::create([
+                    'account_id'        => $account_id,
+                    'transaction_type'  => $transaction_type,
+                    'amount'            => $amount,
+                    'description'       => $description,
+                    'is_transfer'       => $is_transfer,
+                    'receiver_id'       => $receiver,
+                    'transaction_by'    => auth()->id()
+                ]);
+                $FirstTransaction_id = $FirstTransactionAdd->id;
+
+                /* Add Category Data into Transaction Category Table  */
+                $addTransactionCategory = $this->AddTransactionCategory($request, $FirstTransaction_id);
+
+                /* Calculate Account Balance And Store Into Account For Sender */
+                $FirstAccountBalanceCalculation = $this->AccountBalanceCalculation($account_id);
+
+                // store the data For Receiver Side
+                $SecondTransactionAdd = Transaction::create([
+                    'account_id'        => $receiver,
+                    'transaction_type'  => '1',
+                    'amount'            => $amount,
+                    'description'       => "Add Transfer Amount",
+                    'is_transfer'       => $is_transfer,
+                    'receiver_id'       => $account_id,
+                    'transaction_by'    => auth()->id()
+                ]);
+
+                /* Calculate Account Balance And Store Into Account For Receiver */
+                $SecondAccountBalanceCalculation = $this->AccountBalanceCalculation($receiver);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /* Add Selected Transaction Category Data into Transaction Category (Pivot) Table  */
+    private function AddTransactionCategory($request, $transaction_id)
+    {
+        $transaction = Transaction::findOrFail($transaction_id);
+        $category = $request->category;
+        if ($category != null) {
+            for ($i = 0; $i < count($category); $i++) {
+                $transaction->categories()->attach($category[$i]);
+            }
+        }
+    }
+
+    /* Update Selected Transaction Category Data into Transaction Category (Pivot) Table  */
+    private function UpdateTransactionCategory($request, $edit_transaction_id)
+    {
+        /* All The Current Transaction Category Remove From Pivot Table  */
+        $transaction = Transaction::findOrFail($edit_transaction_id);
+        foreach ($transaction->categories as $category) {
+            $transaction->categories()->detach($category['id']);
+        }
+
+        /* Save The New Transaction Category into Pivot Table  */
+        $newCategory = $request->category;
+        if ($newCategory != null) {
+            for ($i = 0; $i < count($newCategory); $i++) {
+                $transaction->categories()->attach($newCategory[$i]);
+            }
+        }
     }
 }

@@ -86,5 +86,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('transactionView', 'transactionView')->name('transaction.view');
         Route::post('transactionEdit', 'transactionEdit')->name('transaction.edit');
         Route::post('transactionDelete', 'transactionDelete')->name('transaction.delete');
+        Route::post('accountBalance', 'accountBalance')->name('accountBalance');
     });
 });
