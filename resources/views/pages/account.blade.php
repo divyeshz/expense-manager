@@ -56,6 +56,7 @@
     <script>
         $(document).ready(function() {
 
+            // make yajra Table
             $('#accountListTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -84,14 +85,138 @@
                 ]
             });
 
+            // Reset Account Modal Form and open Account Modal
             $(document).on("click", "#openAccountModal", function(event) {
-                $("#addAccountModalForm #name").val('');
-                $("#addAccountModalForm #account_number").val('');
-                $('#addAccountModal').modal('show');
+                $("#AccountModalForm #name").val('');
+                $("#AccountModalForm #account_number").val('');
+                $("#AccountModalForm #edit_account_id").val('');
+                $('#AccountModal .modal-title').text('Add Account');
+                $('#AccountModal').modal('show');
             });
 
         });
 
+        // View Account Ajax call First Validate After That Put Data Into Modal
+        function viewAccount(id = "") {
+            $.ajax({
+                type: 'get',
+                data: {
+                    id: id,
+                },
+                url: "{{ route('account.view') }}",
+                success: function(response) {
+                    $("#AccountModalForm #name").val(response.name);
+                    $("#AccountModalForm #account_number").val(response.account_number);;
+                    $("#AccountModalForm #edit_account_id").val(response.id);
+                    $('#AccountModal .modal-title').text('Edit Account');
+                    $('#AccountModal').modal('show');
+                }
+            })
+        }
+
+        // Function For Add & Edit Account Using Same Modal Besed on Condition
+        function saveAccount() {
+            let edit_account_id = $("#AccountModalForm #edit_account_id").val();
+            console.log(edit_account_id);
+
+            $("#AccountModalForm").validate({
+                rules: {
+                    name: "required",
+                    account_number: {
+                        required: true,
+                        number: true,
+                        minlength: 8,
+                        maxlength: 8
+                    }
+                },
+                messages: {
+                    name: "Please Specify your name",
+                    account_number: {
+                        required: "Please provide a Account Number",
+                        number: "Please enter a valid Number.",
+                        minlength: "Your Account Number must be 8 digits long",
+                        maxlength: "Your Account Number must be 8 digits long"
+                    }
+                },
+                submitHandler: function(form) {
+                    if (edit_account_id == "") {
+                        $.ajax({
+                            type: 'post',
+                            data: $('#AccountModalForm').serialize(),
+                            url: "{{ route('account.save') }}",
+                            success: function(response) {
+                                var accountListTable = $('#accountListTable').dataTable();
+                                accountListTable.fnDraw(false);
+
+                                if (response.status == "200") {
+                                    toastr.success('' + response.message + '');
+                                } else {
+                                    toastr.error('' + response.message + '');
+                                }
+                                $('#AccountModal').modal('hide');
+                            }
+
+                        });
+                    } else {
+                        $.ajax({
+                            type: 'post',
+                            data: $('#AccountModalForm').serialize(),
+                            url: "{{ route('account.edit') }}",
+                            success: function(response) {
+                                var accountListTable = $('#accountListTable').dataTable();
+                                accountListTable.fnDraw(false);
+
+                                if (response.status == "200") {
+                                    toastr.success('' + response.message + '');
+                                } else {
+                                    toastr.error('' + response.message + '');
+                                }
+                                $('#AccountModal').modal('hide');
+                            }
+
+                        });
+                    }
+                }
+            });
+        }
+
+        // Delete Account Ajax call First Validate After That Submit In Response Show Toast Message And ReDraw Datatable
+        function deleteAccount(id = "") {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'post',
+                        dataType: 'json',
+                        data: {
+                            id: id,
+                            _token: "{{ csrf_token() }}"
+                        },
+                        url: "{{ route('account.delete') }}",
+                        success: function(response) {
+                            var accountListTable = $('#accountListTable').dataTable();
+                            accountListTable.fnDraw(false);
+
+                            if (response.status == "200") {
+                                toastr.success('' + response.message + '');
+                            } else {
+                                toastr.error('' + response.message + '');
+                            }
+                            $('#deleteAccountModal').modal('hide');
+                        }
+                    })
+                }
+            });
+        }
+
+        // Function for Add initial account balance
         function addAccountBalance() {
             $("#addBalanceModalForm").validate({
                 rules: {
@@ -129,139 +254,6 @@
             });
         }
 
-        function addAccount() {
-            $("#addAccountModalForm").validate({
-                rules: {
-                    name: "required",
-                    account_number: {
-                        required: true,
-                        number: true,
-                        minlength: 8,
-                        maxlength: 8
-                    }
-                },
-                messages: {
-                    name: "Please Specify your name",
-                    account_number: {
-                        required: "Please provide a Account Number",
-                        number: "Please enter a valid Number.",
-                        minlength: "Your Account Number must be 8 digits long",
-                        maxlength: "Your Account Number must be 8 digits long"
-                    }
-                },
-                submitHandler: function(form) {
-                    $.ajax({
-                        type: 'post',
-                        data: $('#addAccountModalForm').serialize(),
-                        url: "{{ route('account.save') }}",
-                        success: function(response) {
-                            var accountListTable = $('#accountListTable').dataTable();
-                            accountListTable.fnDraw(false);
-
-                            if (response.status == "200") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
-                            }
-                            $('#addAccountModal').modal('hide');
-                        }
-
-                    });
-                }
-            });
-        }
-
-        function deleteAccount(id = "") {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: 'post',
-                        dataType: 'json',
-                        data: {
-                            id: id,
-                            _token: "{{ csrf_token() }}"
-                        },
-                        url: "{{ route('account.delete') }}",
-                        success: function(response) {
-                            var accountListTable = $('#accountListTable').dataTable();
-                            accountListTable.fnDraw(false);
-
-                            if (response.status == "200") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
-                            }
-                            $('#deleteAccountModal').modal('hide');
-                        }
-                    })
-                }
-            });
-        }
-
-        function viewAccount(id = "") {
-            $.ajax({
-                type: 'get',
-                data: {
-                    id: id,
-                },
-                url: "{{ route('account.view') }}",
-                success: function(response) {
-                    $('#editAccountModalForm #name').val(response.name);
-                    $('#editAccountModalForm #account_number').val(response.account_number);;
-                    $('#editAccountModalForm #edit_account_id').val(response.id);
-                }
-            })
-        }
-
-        function editAccount() {
-            $("#editAccountModalForm").validate({
-                rules: {
-                    name: "required",
-                    account_number: {
-                        required: true,
-                        number: true,
-                        minlength: 8,
-                        maxlength: 8
-                    }
-                },
-                messages: {
-                    name: "Please Specify your name",
-                    account_number: {
-                        required: "Please provide a Account Number",
-                        number: "Please enter a valid Number.",
-                        minlength: "Your Account Number must be 8 digits long",
-                        maxlength: "Your Account Number must be 8 digits long"
-                    }
-                },
-                submitHandler: function(form) {
-                    $.ajax({
-                        type: 'post',
-                        data: $('#editAccountModalForm').serialize(),
-                        url: "{{ route('account.edit') }}",
-                        success: function(response) {
-                            var accountListTable = $('#accountListTable').dataTable();
-                            accountListTable.fnDraw(false);
-
-                            if (response.status == "200") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
-                            }
-                            $('#editAccountModal').modal('hide');
-                        }
-
-                    });
-                }
-            });
-        }
     </script>
 
 @endsection

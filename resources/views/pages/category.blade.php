@@ -86,7 +86,7 @@
         // Function For Add & Edit Category Using Same Modal Besed on Condition
         function saveCategory() {
             let edit_category_id = $("#CategoryModalForm #edit_category_id").val();
-            console.log(edit_category_id);
+
             $("#CategoryModalForm").validate({
                 rules: {
                     name: "required",
@@ -138,7 +138,7 @@
             });
         }
 
-        // View Category Ajax call First Validate After That Put Data Into Edit Modal
+        // View Category Ajax call First Validate After That Put Data Into Modal
         function viewCategory(id = "") {
             $.ajax({
                 type: 'get',

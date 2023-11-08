@@ -34,7 +34,7 @@ class AccountController extends Controller
 
                     $transactionUrl = route('transaction', $row->id);
 
-                    $actionBtn = '<button type="submit" data-toggle="modal" data-target="#editAccountModal" class="btn btn-primary editAccountModal" onclick=viewAccount(' . $row->id . ')>Edit</button>
+                    $actionBtn = '<button type="submit" class="btn btn-primary editAccountModal" onclick=viewAccount(' . $row->id . ')>Edit</button>
                     <button type="submit" class="btn btn-danger deleteAccountModal" onclick="deleteAccount(' . $row->id . ')">Delete</button>
                     <button data-toggle="modal" data-target="#addBalanceModal" onclick="$(\'#add_balance_account_id\').val(' . $row->id . ')" class="btn btn-info">Add Balance</button>
                     <a href="' . $transactionUrl . '" class="btn btn-warning">View Transaction</a>';
@@ -84,7 +84,7 @@ class AccountController extends Controller
             'account_number'    => $request->account_number,
         ];
 
-        $edit = Account::findOrFail($request->edit_account_id)->where('owner_id', auth()->id())->update($update);
+        $edit = Account::where('id', $request->edit_account_id)->where('owner_id', auth()->id())->update($update);
 
         if ($edit) {
             $response = [
