@@ -27,7 +27,7 @@ class CategoryController extends Controller
                     return $counter;
                 })
                 ->addColumn('action', function($row){
-                    $actionBtn = '<button type="submit" data-toggle="modal" data-target="#editCategoryModal" class="btn btn-primary" onclick="viewCategory('.$row->id.')">Edit</button>
+                    $actionBtn = '<button type="submit" class="btn btn-primary" onclick="viewCategory('.$row->id.')">Edit</button>
                     <button type="submit" class="btn btn-danger "onclick="deleteCategory('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })

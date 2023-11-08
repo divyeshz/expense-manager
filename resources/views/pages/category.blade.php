@@ -76,14 +76,18 @@
 
             // Reset Category Modal Form
             $(document).on("click", "#openCategoryModal", function(event) {
-                $("#addCategoryModalForm #name").val('');
-                $('#addCategoryModal').modal('show');
+                $("#CategoryModalForm #name").val('');
+                $("#CategoryModalForm #edit_category_id").val('');
+                $('#CategoryModal .modal-title').text('Add Category');
+                $('#CategoryModal').modal('show');
             });
         });
 
-        // Add Category Ajax call First Validate After That Submit In Response Show Toast Message  And ReDraw Datatable
-        function addCategory() {
-            $("#addCategoryModalForm").validate({
+        // Function For Add & Edit Category Using Same Modal Besed on Condition
+        function saveCategory() {
+            let edit_category_id = $("#CategoryModalForm #edit_category_id").val();
+            console.log(edit_category_id);
+            $("#CategoryModalForm").validate({
                 rules: {
                     name: "required",
                 },
@@ -91,24 +95,45 @@
                     name: "Please Specify your Category name",
                 },
                 submitHandler: function(form) {
-                    $.ajax({
-                        type: 'post',
-                        data: $('#addCategoryModalForm').serialize(),
-                        url: "{{ route('category.save') }}",
-                        success: function(response) {
+                    if (edit_category_id == "") {
+                        $.ajax({
+                            type: 'post',
+                            data: $('#CategoryModalForm').serialize(),
+                            url: "{{ route('category.save') }}",
+                            success: function(response) {
+                                if (response.status == "success") {
+                                    toastr.success('' + response.message + '');
+                                } else {
+                                    toastr.error('' + response.message + '');
+                                }
 
-                            var categoryListTable = $('#categoryListTable').dataTable();
-                            categoryListTable.fnDraw(false);
+                                var categoryListTable = $('#categoryListTable').dataTable();
+                                categoryListTable.fnDraw(false);
 
-                            if (response.status == "success") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
+                                $('#CategoryModal').modal('hide');
+
                             }
-                            $('#addCategoryModal').modal('hide');
-                        }
 
-                    });
+                        });
+                    } else {
+                        $.ajax({
+                            type: 'post',
+                            data: $('#CategoryModalForm').serialize(),
+                            url: "{{ route('category.edit') }}",
+                            success: function(response) {
+                                if (response.status == "success") {
+                                    toastr.success('' + response.message + '');
+                                } else {
+                                    toastr.error('' + response.message + '');
+                                }
+
+                                var categoryListTable = $('#categoryListTable').dataTable();
+                                categoryListTable.fnDraw(false);
+
+                                $('#CategoryModal').modal('hide');
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -122,41 +147,12 @@
                 },
                 url: "{{ route('category.view') }}",
                 success: function(response) {
-                    $('#editCategoryModalForm #name').val(response.name);
-                    $('#editCategoryModalForm #edit_category_id').val(response.id);
+                    $('#CategoryModal .modal-title').text('Edit Category');
+                    $('#CategoryModalForm #name').val(response.name);
+                    $('#CategoryModalForm #edit_category_id').val(response.id);
+                    $('#CategoryModal').modal('show');
                 }
             })
-        }
-
-        // Edit Category Ajax call First Validate After That Submit In Response Show Toast Message  And ReDraw Datatable
-        function editCategory() {
-            $("#editCategoryModalForm").validate({
-                rules: {
-                    name: "required",
-                },
-                messages: {
-                    name: "Please Specify your Category name",
-                },
-                submitHandler: function(form) {
-                    $.ajax({
-                        type: 'post',
-                        data: $('#editCategoryModalForm').serialize(),
-                        url: "{{ route('category.edit') }}",
-                        success: function(response) {
-                            if (response.status == "success") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
-                            }
-                            $('#editCategoryModal').modal('hide');
-
-                            var categoryListTable = $('#categoryListTable').dataTable();
-                            categoryListTable.fnDraw(false);
-                        }
-
-                    });
-                }
-            });
         }
 
         // Delete Category Ajax call First Validate After That Submit In Response Show Toast Message And ReDraw Datatable
