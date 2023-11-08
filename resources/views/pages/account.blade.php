@@ -117,7 +117,6 @@
         // Function For Add & Edit Account Using Same Modal Besed on Condition
         function saveAccount() {
             let edit_account_id = $("#AccountModalForm #edit_account_id").val();
-            console.log(edit_account_id);
 
             $("#AccountModalForm").validate({
                 rules: {

@@ -17,7 +17,7 @@
             <h1 class="h3 mb-0 text-gray-800">Transaction of {{ $account->name }}</h1>
             {{-- Add Transaction Button --}}
             <button class="btn btn-primary btn-icon-split d-none d-sm-inline-block shadow-sm" id="openTransactionModal"
-                onclick="$('#addTransactionModalForm #account_id').val('{{ $account->id }}');">
+                onclick="$('#TransactionModalForm #account_id').val('{{ $account->id }}');">
                 <span class="icon text-white-50">
                     <i class="fas far fa-file-alt"></i>
                 </span>
@@ -62,21 +62,23 @@
         $(document).ready(function() {
             transactionList();
 
-            // Reset Transaction Modal Form
+            // Reset Transaction Modal Form And open Modal
             $(document).on("click", "#openTransactionModal", function(event) {
-                $("#addTransactionModalForm #amount").val('');
-                $("#addTransactionModalForm #transaction_type")[0].selectedIndex = 0;
-                $("#addTransactionModalForm .is_transfer")[0].checked = false;
-                $("#addTransactionModalForm #description").val('');
-                $("#addTransactionModalForm #receiver")[0].selectedIndex = 0;
-                $("#addTransactionModalForm #category")[0].selectedIndex = 0;
+                $("#TransactionModalForm #amount").val('');
+                $("#TransactionModalForm #edit_transaction_id").val('');
+                $("#TransactionModalForm #transaction_type")[0].selectedIndex = 0;
+                $("#TransactionModalForm #is_transfer")[0].checked = false;
+                $("#TransactionModalForm #description").val('');
+                $("#TransactionModalForm #receiver")[0].selectedIndex = 0;
+                $("#TransactionModalForm #category")[0].selectedIndex = 0;
                 showReciver();
-                $('#addTransactionModal').modal('show');
+                $('#TransactionModal .modal-title').text('Add Transaction');
+                $('#TransactionModal').modal('show');
             });
 
             // Add Error To Transaction Type Field
             $("#transaction_type").change(function() {
-                if ($('.is_transfer').is(':checked')) {
+                if ($('#is_transfer').is(':checked')) {
                     if ($(this).val() == '0' && ($("#transaction_type").hasClass('error'))) {
                         $("#transaction_type").removeClass('error');
                         $("#transaction_type-error").remove();
@@ -92,7 +94,7 @@
             });
 
             // On click Transfer CheckBox Call This Two Function
-            $(document).on("click", ".is_transfer", function() {
+            $(document).on("click", "#is_transfer", function() {
                 //  Transaction Type Validate For Transfer
                 ValidateTransactionType();
 
@@ -180,9 +182,11 @@
             });
         }
 
-        // Add Transaction Ajax call First Validate After That Submit In Response Show Toast Message Rerender Transaction List
-        function addTransaction() {
-            $("#addTransactionModalForm").validate({
+        // Function For Add & Edit Transaction Using Same Modal Besed on Condition
+        function saveTransaction() {
+            let edit_transaction_id = $("#TransactionModalForm #edit_transaction_id").val();
+
+            $("#TransactionModalForm").validate({
                 rules: {
                     account_id: "required",
                     amount: {
@@ -212,67 +216,40 @@
                     receiver: "Please Select Receiver",
                 },
                 submitHandler: function(form) {
-                    $.ajax({
-                        type: 'post',
-                        dataType: 'json',
-                        data: $('#addTransactionModalForm').serialize(),
-                        url: "{{ route('transaction.save') }}",
-                        success: function(response) {
-                            if (response.status == "200") {
-                                toastr.success('' + response.message + '');
+                    if (edit_transaction_id == "") {
+                        $.ajax({
+                            type: 'post',
+                            dataType: 'json',
+                            data: $('#TransactionModalForm').serialize(),
+                            url: "{{ route('transaction.save') }}",
+                            success: function(response) {
+                                if (response.status == "200") {
+                                    toastr.success('' + response.message + '');
+                                    transactionList();
+                                } else {
+                                    toastr.error('' + response.message + '');
+                                }
+                                $('#TransactionModal').modal('hide');
+                            }
+                        });
+                    } else {
+                        $.ajax({
+                            type: 'post',
+                            dataType: 'json',
+                            data: $('#TransactionModalForm').serialize(),
+                            url: "{{ route('transaction.edit') }}",
+                            success: function(response) {
+                                if (response.status == "200") {
+                                    toastr.success('' + response.message + '');
+                                } else {
+                                    toastr.error('' + response.message + '');
+                                }
+                                $('#TransactionModal').modal('hide');
                                 transactionList();
-                            } else {
-                                toastr.error('' + response.message + '');
                             }
-                            $('#addTransactionModal').modal('hide');
-                        }
-                    });
-                }
-            });
 
-
-        }
-
-        // Edit Transaction Ajax call First Validate After That Submit In Response Show Toast Message Rerender Transaction List
-        function editTransaction() {
-            $("#editTransactionModalForm").validate({
-                rules: {
-                    edit_transaction_id: "required",
-                    account_id: "required",
-                    amount: {
-                        required: true,
-                        number: true,
-                    },
-                    transaction_type: "required",
-                    receiver: {
-                        required: "#is_transfer:checked",
+                        });
                     }
-                },
-                messages: {
-                    amount: {
-                        required: "Please Provide Amount In Number",
-                        number: "Please enter a valid Number."
-                    },
-                    transaction_type: "Please Select Transaction Type",
-                    receiver: "Please Select Receiver",
-                },
-                submitHandler: function(form) {
-                    $.ajax({
-                        type: 'post',
-                        dataType: 'json',
-                        data: $('#editTransactionModalForm').serialize(),
-                        url: "{{ route('transaction.edit') }}",
-                        success: function(response) {
-                            if (response.status == "200") {
-                                toastr.success('' + response.message + '');
-                            } else {
-                                toastr.error('' + response.message + '');
-                            }
-                            $('#editTransactionModal').modal('hide');
-                            transactionList();
-                        }
-
-                    });
                 }
             });
         }
@@ -287,7 +264,7 @@
                 dataType: 'json',
                 url: "{{ route('transaction.view') }}",
                 success: function(response) {
-                    $("#editTransactionModalForm #category")[0].selectedIndex = 0;
+                    $("#TransactionModalForm #category")[0].selectedIndex = 0;
                     if (response.status == '200') {
                         var transaction_type = response.transaction.transaction_type;
                         var is_transfer = response.transaction.is_transfer;
@@ -296,39 +273,44 @@
                         if (response.transaction_categorie.length > 0) {
                             for (var i = 0; i < response.transaction_categorie.length; i++) {
                                 var categorie_id = response.transaction_categorie[i].id;
-                                $("#editTransactionModalForm #category").find('option[value="' + categorie_id +
+                                $("#TransactionModalForm #category").find('option[value="' + categorie_id +
                                     '"]').prop('selected', true);
-                                // $('#editTransactionModalForm #category option').each(function() {
-                                //     if ($(this).val() == response.transaction_categorie[i].id) {
-                                //         $(this).attr("selected", true);
-                                //     }
-                                // });
                             }
                         }
 
-                        $("#editTransactionModalForm #edit_transaction_id").val(response.transaction.id);
-                        $("#editTransactionModalForm #account_id").val(response.transaction.account_id);
-                        $("#editTransactionModalForm #amount").val(response.transaction.amount);
-                        $("#editTransactionModalForm .transaction_type select").val(transaction_type).change();
+                        $("#TransactionModalForm #edit_transaction_id").val(response.transaction.id);
+                        $("#TransactionModalForm #account_id").val(response.transaction.account_id);
+                        $("#TransactionModalForm #amount").val(response.transaction.amount);
+
+                        if (transaction_type != "" && transaction_type != null) {
+                            $("#TransactionModalForm #transaction_type").find('option[value="' +
+                                    transaction_type + '"]')
+                                .prop('selected', true);
+                        } else {
+                            $("#TransactionModalForm #transaction_type").find('option[value=""]').prop(
+                                'selected',
+                                true);
+                        }
 
                         if (is_transfer == '1' && is_transfer != "0") {
-                            $('#editTransactionModalForm #is_transfer[value="' + is_transfer + '"]').prop(
+                            $('#TransactionModalForm #is_transfer[value="' + is_transfer + '"]').prop(
                                 'checked', true);
                         } else {
-                            $('#editTransactionModalForm #is_transfer').prop('checked', false);
+                            $('#TransactionModalForm #is_transfer').prop('checked', false);
                         }
                         showReciver();
 
                         if (receiver_id != "" && receiver_id != null) {
-                            $("#editTransactionModalForm #receiver").find('option[value="' + receiver_id + '"]')
+                            $("#TransactionModalForm #receiver").find('option[value="' + receiver_id + '"]')
                                 .prop('selected', true);
                         } else {
-                            $("#editTransactionModalForm #receiver").find('option[value=""]').prop('selected',
+                            $("#TransactionModalForm #receiver").find('option[value=""]').prop('selected',
                                 true);
                         }
 
-                        $("#editTransactionModalForm #description").val(response.transaction.description);
-                        $('#editTransactionModal').modal('show');
+                        $("#TransactionModalForm #description").val(response.transaction.description);
+                        $('#TransactionModal .modal-title').text('Edit Transaction');
+                        $('#TransactionModal').modal('show');
                     } else {
                         toastr.error('' + response.message + '');
                     }
@@ -371,7 +353,7 @@
 
         // Show Reciver Function
         function showReciver() {
-            if ($('.is_transfer').is(':checked')) {
+            if ($('#is_transfer').is(':checked')) {
                 if ($(".receiver-form-group .form-control").hasClass('d-none')) {
                     $(".receiver-form-group .form-control").removeClass('d-none');
                 }
