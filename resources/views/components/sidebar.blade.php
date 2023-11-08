@@ -6,7 +6,7 @@
         <div class="sidebar-brand-icon rotate-n-15">
             <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-1">{{  str_replace('_',' ',env('APP_NAME')) }}</div>
+        <div class="sidebar-brand-text mx-1">{{ env('APP_NAME') }}</div>
     </a>
 
     <!-- Divider -->
