@@ -25,7 +25,7 @@ use App\Http\Controllers\UserController;
 Route::controller(UserController::class)->group(function () {
     Route::get('/', 'loginForm')->name('loginForm');
     Route::get('registration', 'registrationForm')->name('registrationForm');
-    Route::post('register', 'register')->name('register');
+    Route::post('register', 'register')->name('register')->middleware('transaction');
     Route::post('login', 'login')->name('login');
     Route::get('forgotPassword', 'forgotPasswordForm')->name('forgotPasswordForm');
     Route::post('forgotPassword', 'forgotPassword')->name('forgotPassword');
