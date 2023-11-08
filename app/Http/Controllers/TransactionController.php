@@ -50,31 +50,31 @@ class TransactionController extends Controller
                     'transaction_type_name'    => $transaction_type_name,
                 ];
             }
+        }
 
-            if ($request->ajax()) {
-                return Datatables::of($tableData)
-                    ->addColumn('#', function () {
-                        static $counter = 0;
-                        $counter++;
-                        return $counter;
-                    })
-                    ->addColumn('amount_inr', function ($row) {
-                        return $row['amount'];
-                    })
-                    ->addColumn('description', function ($row) {
-                        return $row['description'];
-                    })
-                    ->addColumn('transaction_type', function ($row) {
-                        return html_entity_decode($row['transaction_type_name']);
-                    })
-                    ->addColumn('action', function ($row) {
-                        $actionBtn = '
+        if ($request->ajax()) {
+            return Datatables::of($tableData)
+                ->addColumn('#', function () {
+                    static $counter = 0;
+                    $counter++;
+                    return $counter;
+                })
+                ->addColumn('amount_inr', function ($row) {
+                    return $row['amount'];
+                })
+                ->addColumn('description', function ($row) {
+                    return $row['description'];
+                })
+                ->addColumn('transaction_type', function ($row) {
+                    return html_entity_decode($row['transaction_type_name']);
+                })
+                ->addColumn('action', function ($row) {
+                    $actionBtn = '
                         <button type="submit" class="btn btn-primary" onclick="viewTransaction(' . $row['id'] . ')">Edit</button> <button type="submit" onclick="deleteTransaction(' . $row['id'] . ')" class="btn btn-danger">Delete</button>';
-                        return $actionBtn;
-                    })
-                    ->rawColumns(['transaction_type', 'action'])
-                    ->make(true);
-            }
+                    return $actionBtn;
+                })
+                ->rawColumns(['transaction_type', 'action'])
+                ->make(true);
         }
     }
 
@@ -561,13 +561,13 @@ class TransactionController extends Controller
     {
         /* Chek Account Balance */
         $balance = $this->ChekBalance($request->id);
-        if($balance != ""){
+        if ($balance != "") {
             $response = [
                 'status'    => '200',
                 'message'   => "Account Balance!!!",
                 'balance'   => $balance
             ];
-        }else{
+        } else {
             $response = [
                 'status'    => '400',
                 'message'   => "Account Not Balance!!!"
